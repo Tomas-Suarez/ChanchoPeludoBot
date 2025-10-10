@@ -11,6 +11,12 @@ public interface MusicService {
      * @param trackUrl La URL de la canción a reproducir.
      */
     void loadAndPlay(SlashCommandInteractionEvent event, String trackUrl);
+
+    /**
+     * Carga y reproduce una canción desde una URL usando un evento de mensaje de texto.
+     * @param event El evento del mensaje que inició la acción (ej: "c!play").
+     * @param trackUrl La URL de la canción a reproducir.
+     */
     void loadAndPlayFromMessage(MessageReceivedEvent event, String trackUrl);
 
 }

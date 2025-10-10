@@ -21,10 +21,6 @@ public class BotConfiguration {
                 .build()
                 .awaitReady();
 
-        jda.upsertCommand("play", "Reproduce una canción.")
-                .addOption(OptionType.STRING, "url", "El enlace de la canción.", true)
-                .queue();
-
         return jda;
     }
 }
