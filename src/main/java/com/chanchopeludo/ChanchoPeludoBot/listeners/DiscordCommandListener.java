@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-import static com.chanchopeludo.ChanchoPeludoBot.util.AppConstants.DEFAULT_PREFIX;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.DEFAULT_PREFIX;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.*;
 
 @Component
 public class DiscordCommandListener extends ListenerAdapter {
@@ -54,24 +55,23 @@ public class DiscordCommandListener extends ListenerAdapter {
 
             if (optionalProfile.isPresent()) {
                 UserServerStatsEntity profile = optionalProfile.get();
-                String response = "¡Hola, " + event.getAuthor().getName() + "!\n" +
-                        "Tu nivel es: " + profile.getLevel() + "\n" +
-                        "Tu XP es: " + profile.getXp();
+                String response = String.format(MSG_PROFILE_TEMPLATE,
+                        event.getAuthor().getName(), profile.getLevel(), profile.getXp());
                 event.getChannel().sendMessage(response).queue();
             } else {
-                event.getChannel().sendMessage("Aún no tienes un perfil. ¡Habla en el servidor para ganar XP!").queue();
+                event.getChannel().sendMessage(MSG_PROFILE_NOT_FOUND).queue();
             }
 
         } else if (command.equals("play")) {
 
             if (args.length < 2) {
-                event.getChannel().sendMessage("Uso correcto: `c!play <URL de YouTube>`").queue();
+                event.getChannel().sendMessage(MSG_PLAY_USAGE).queue();
                 return;
             }
 
             AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
             if (userChannel == null) {
-                event.getChannel().sendMessage("Debes estar en un canal de voz para usar este comando.").queue();
+                event.getChannel().sendMessage(MSG_PLAY_NO_VOICE).queue();
                 return;
             }
 

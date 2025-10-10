@@ -8,13 +8,14 @@ import com.chanchopeludo.ChanchoPeludoBot.repository.ServerRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.UserRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.UserServerStatsRepository;
 import com.chanchopeludo.ChanchoPeludoBot.service.UserService;
-import com.chanchopeludo.ChanchoPeludoBot.util.LevelingHelper;
+import com.chanchopeludo.ChanchoPeludoBot.util.helpers.LevelingHelper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static com.chanchopeludo.ChanchoPeludoBot.util.AppConstants.*;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.*;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.XpConstants.INITIAL_EXP;
 
 @Service
 public class UserServiceImp implements UserService {

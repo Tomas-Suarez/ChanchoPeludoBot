@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_SLASH_NO_VOICE;
+
 public class MusicCommandListener extends ListenerAdapter {
 
     private final JDA jda;
@@ -27,7 +29,7 @@ public class MusicCommandListener extends ListenerAdapter {
         event.deferReply().queue();
 
         if (event.getMember() == null || event.getMember().getVoiceState() == null || !event.getMember().getVoiceState().inAudioChannel()) {
-            event.getHook().sendMessage("¡Debes estar en un canal de voz para usar este comando!").queue();
+            event.getHook().sendMessage(MSG_SLASH_NO_VOICE).queue();
             return;
         }
 

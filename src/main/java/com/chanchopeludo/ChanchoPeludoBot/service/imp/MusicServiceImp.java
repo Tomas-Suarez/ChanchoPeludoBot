@@ -3,6 +3,7 @@ package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 import com.chanchopeludo.ChanchoPeludoBot.music.GuildMusicManager;
 import com.chanchopeludo.ChanchoPeludoBot.music.PlayerManager;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
+import com.chanchopeludo.ChanchoPeludoBot.util.helpers.YoutubeHelper;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -21,6 +22,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
+
 @Service
 public class MusicServiceImp implements MusicService {
 
@@ -33,11 +36,7 @@ public class MusicServiceImp implements MusicService {
 
     @PostConstruct
     private void init() {
-        // Opcional: forzar un user-agent moderno para YouTube
-        System.setProperty("lavaplayer.youtube.http.userAgent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-
-        // Usar PlayerManager centralizado
+        System.setProperty("lavaplayer.youtube.http.userAgent", USER_AGENT);
         this.playerManager = PlayerManager.getInstance().getPlayerManager();
     }
 
@@ -52,14 +51,21 @@ public class MusicServiceImp implements MusicService {
     }
 
     private String getAudioUrl(String youtubeUrl) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder("yt-dlp.exe", "-f", "bestaudio", "-g", youtubeUrl);
+        ProcessBuilder pb = new ProcessBuilder(
+                YTDLP_EXECUTABLE,
+                YTDLP_FORMAT,
+                YTDLP_BEST_AUDIO,
+                YTDLP_GET_URL,
+                youtubeUrl
+        );
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String directUrl = reader.readLine();
-        process.waitFor();
-        return directUrl;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String directUrl = reader.readLine();
+            process.waitFor();
+            return directUrl;
+        }
     }
 
     @Override
@@ -74,7 +80,7 @@ public class MusicServiceImp implements MusicService {
                 @Override
                 public void trackLoaded(AudioTrack track) {
                     musicManager.getScheduler().queue(track);
-                    event.getHook().sendMessage("🎶 Reproduciendo: " + track.getInfo().title).queue();
+                    event.getHook().sendMessage(MSG_TRACK_PLAYING + track.getInfo().title).queue();
                 }
 
                 @Override
@@ -82,23 +88,26 @@ public class MusicServiceImp implements MusicService {
                     AudioTrack firstTrack = playlist.getSelectedTrack();
                     if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
                     musicManager.getScheduler().queue(firstTrack);
-                    event.getHook().sendMessage("🎶 Lista cargada: " + playlist.getName() + " (" + playlist.getTracks().size() + " canciones)").queue();
+                    event.getHook().sendMessage(
+                            MSG_PLAYLIST_LOADED + playlist.getName() +
+                                    " (" + playlist.getTracks().size() + " canciones)"
+                    ).queue();
                 }
 
                 @Override
                 public void noMatches() {
-                    event.getHook().sendMessage("❌ No se encontró la canción.").queue();
+                    event.getHook().sendMessage(MSG_NO_MATCHES).queue();
                 }
 
                 @Override
                 public void loadFailed(FriendlyException exception) {
-                    event.getHook().sendMessage("❌ Error al cargar la canción: " + exception.getMessage()).queue();
+                    event.getHook().sendMessage(MSG_LOAD_FAILED + exception.getMessage()).queue();
                     exception.printStackTrace();
                 }
             });
 
         } catch (IOException | InterruptedException e) {
-            event.getHook().sendMessage("❌ Error al obtener el audio con yt-dlp: " + e.getMessage()).queue();
+            event.getHook().sendMessage(MSG_YTDLP_ERROR + e.getMessage()).queue();
         }
     }
 
@@ -108,12 +117,13 @@ public class MusicServiceImp implements MusicService {
         GuildMusicManager musicManager = getGuildAudioPlayer(guild);
 
         try {
-            String directUrl = getAudioUrl(trackUrl);
+            String directUrl = YoutubeHelper.getAudioUrl(trackUrl);
+            String videoTitle = YoutubeHelper.getVideoTitle(trackUrl);
 
             playerManager.loadItemOrdered(musicManager, directUrl, new AudioLoadResultHandler() {
                 @Override
                 public void trackLoaded(AudioTrack track) {
-                    event.getChannel().sendMessage("Añadiendo a la cola: **" + track.getInfo().title + "**").queue();
+                    event.getChannel().sendMessage(MSG_TRACK_ADDED + videoTitle + "**").queue();
                     play(guild, musicManager, track, event.getMember().getVoiceState().getChannel());
                 }
 
@@ -121,24 +131,27 @@ public class MusicServiceImp implements MusicService {
                 public void playlistLoaded(AudioPlaylist playlist) {
                     AudioTrack firstTrack = playlist.getSelectedTrack();
                     if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
-                    event.getChannel().sendMessage("Añadiendo la playlist: **" + playlist.getName() + "** (" + playlist.getTracks().size() + " canciones)").queue();
+                    event.getChannel().sendMessage(
+                            MSG_PLAYLIST_ADDED + playlist.getName() +
+                                    "** (" + playlist.getTracks().size() + " canciones)"
+                    ).queue();
                     play(guild, musicManager, firstTrack, event.getMember().getVoiceState().getChannel());
                 }
 
                 @Override
                 public void noMatches() {
-                    event.getChannel().sendMessage("No encontré nada en la URL proporcionada.").queue();
+                    event.getChannel().sendMessage(MSG_NO_MATCHES_URL).queue();
                 }
 
                 @Override
                 public void loadFailed(FriendlyException exception) {
-                    event.getChannel().sendMessage("Error al cargar la canción: " + exception.getMessage()).queue();
+                    event.getChannel().sendMessage(MSG_LOAD_FAILED + exception.getMessage()).queue();
                     exception.printStackTrace();
                 }
             });
 
         } catch (IOException | InterruptedException e) {
-            event.getChannel().sendMessage("❌ Error al obtener el audio con yt-dlp: " + e.getMessage()).queue();
+            event.getChannel().sendMessage(MSG_YOUTUBE_ERROR + e.getMessage()).queue();
         }
     }
 
