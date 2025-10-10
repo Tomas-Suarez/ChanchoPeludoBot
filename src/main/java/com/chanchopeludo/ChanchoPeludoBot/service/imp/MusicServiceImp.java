@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
@@ -90,19 +91,23 @@ public class MusicServiceImp implements MusicService {
                 playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
                     @Override
                     public void trackLoaded(AudioTrack track) {
+                        track.setUserData(info);
                         event.getHook().sendMessage(MSG_TRACK_ADDED + info.title() + "**").queue();
                         play(guild, musicManager, track, event.getMember().getVoiceState().getChannel());
                     }
+
                     @Override
                     public void playlistLoaded(AudioPlaylist playlist) {
                         AudioTrack firstTrack = playlist.getTracks().get(0);
                         event.getHook().sendMessage(MSG_PLAYLIST_ADDED + playlist.getName() + "** (" + playlist.getTracks().size() + " canciones)").queue();
                         play(guild, musicManager, firstTrack, event.getMember().getVoiceState().getChannel());
                     }
+
                     @Override
                     public void noMatches() {
                         event.getHook().sendMessage(MSG_NO_MATCHES_URL).queue();
                     }
+
                     @Override
                     public void loadFailed(FriendlyException exception) {
                         event.getHook().sendMessage(MSG_LOAD_FAILED + exception.getMessage()).queue();
@@ -129,19 +134,23 @@ public class MusicServiceImp implements MusicService {
                 playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
                     @Override
                     public void trackLoaded(AudioTrack track) {
+                        track.setUserData(info);
                         event.getChannel().sendMessage(MSG_TRACK_ADDED + info.title() + "**").queue();
                         play(guild, musicManager, track, event.getMember().getVoiceState().getChannel());
                     }
+
                     @Override
                     public void playlistLoaded(AudioPlaylist playlist) {
                         AudioTrack firstTrack = playlist.getTracks().get(0);
                         event.getChannel().sendMessage(MSG_PLAYLIST_ADDED + playlist.getName() + "** (" + playlist.getTracks().size() + " canciones)").queue();
                         play(guild, musicManager, firstTrack, event.getMember().getVoiceState().getChannel());
                     }
+
                     @Override
                     public void noMatches() {
                         event.getChannel().sendMessage(MSG_NO_MATCHES_URL).queue();
                     }
+
                     @Override
                     public void loadFailed(FriendlyException exception) {
                         event.getChannel().sendMessage(MSG_LOAD_FAILED + exception.getMessage()).queue();
@@ -151,6 +160,102 @@ public class MusicServiceImp implements MusicService {
                 event.getChannel().sendMessage(MSG_YOUTUBE_ERROR + e.getMessage()).queue();
             }
         });
+    }
+
+    @Override
+    public void skipTrack(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        if(musicManager.getPlayer().getPlayingTrack() == null){
+            event.getChannel().sendMessage(MSG_SKIP_FAIL).queue();
+            return;
+        }
+
+        musicManager.getScheduler().nextTrack();
+        event.getChannel().sendMessage(MSG_SKIP_MUSIC).queue();
+    }
+
+    @Override
+    public void stop(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        musicManager.getScheduler().getQueue().clear();
+        musicManager.getPlayer().stopTrack();
+        event.getGuild().getAudioManager().closeAudioConnection();
+        event.getChannel().sendMessage(MSG_STOP_MUSIC).queue();
+    }
+
+    @Override
+    public void pause(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        if(musicManager.getPlayer().isPaused()){
+            event.getChannel().sendMessage(MSG_ALREADY_PAUSED).queue();
+        }
+
+        musicManager.getPlayer().setPaused(true);
+        event.getChannel().sendMessage(MSG_PAUSE_MUSIC).queue();
+    }
+
+    @Override
+    public void resume(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        if (!musicManager.getPlayer().isPaused()) {
+            event.getChannel().sendMessage(MSG_NOT_PAUSED).queue();
+            return;
+        }
+
+        musicManager.getPlayer().setPaused(false);
+        event.getChannel().sendMessage(MSG_RESUME_MUSIC).queue();
+    }
+
+    @Override
+    public void showQueue(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        BlockingQueue<AudioTrack> queue = musicManager.getScheduler().getQueue();
+        AudioTrack currentTrack = musicManager.getPlayer().getPlayingTrack();
+
+        if (queue.isEmpty() && currentTrack == null) {
+            event.getChannel().sendMessage(MSG_QUEUE_EMPTY).queue();
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("**").append(MSG_QUEUE_TITLE).append("**\n\n");
+
+        // --- SECCIÓN CORREGIDA PARA LA CANCIÓN ACTUAL ---
+        if (currentTrack != null && currentTrack.getUserData() instanceof VideoInfo) {
+            // 1. Obtenemos el objeto VideoInfo que guardamos.
+            VideoInfo info = (VideoInfo) currentTrack.getUserData();
+            // 2. Usamos el título correcto desde 'info'.
+            sb.append(MSG_NOW_PLAYING).append("`").append(info.title()).append("`\n\n");
+        } else if (currentTrack != null) {
+            // Fallback por si acaso no hay userData
+            sb.append(MSG_NOW_PLAYING).append("`").append(currentTrack.getInfo().title).append("`\n\n");
+        }
+        // --------------------------------------------------
+
+        if (!queue.isEmpty()) {
+            sb.append(MSG_QUEUE_NEXT_UP).append("\n");
+            int count = 1;
+            // --- SECCIÓN CORREGIDA PARA LA COLA ---
+            for (AudioTrack track : queue) {
+                if (count > 10) break;
+
+                // Verificamos que la información exista antes de usarla
+                if (track.getUserData() instanceof VideoInfo) {
+                    // 1. Obtenemos el objeto VideoInfo de cada canción en la cola.
+                    VideoInfo info = (VideoInfo) track.getUserData();
+                    // 2. Usamos el título correcto desde 'info'.
+                    sb.append("`").append(count++).append(".` ")
+                            .append(info.title()).append("\n");
+                } else {
+                    // Fallback por si acaso
+                    sb.append("`").append(count++).append(".` ")
+                            .append(track.getInfo().title).append("\n");
+                }
+            }
+            // ---------------------------------------------
+        }
+
+        event.getChannel().sendMessage(sb.toString()).queue();
     }
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, AudioChannel voiceChannel) {

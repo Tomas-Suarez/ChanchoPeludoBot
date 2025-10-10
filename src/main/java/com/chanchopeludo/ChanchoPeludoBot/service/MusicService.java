@@ -19,4 +19,33 @@ public interface MusicService {
      */
     void loadAndPlayFromMessage(MessageReceivedEvent event, String trackUrl);
 
+    /**
+     * Saltea la canción que se encuentra reproduciendo y comienza la siguiente en la cola.
+     * @param event El evento del mensaje que inició la acción (ej: "c!skip").
+     */
+    void skipTrack(MessageReceivedEvent event);
+
+    /**
+     * Detiene la reproducción de la música por completo, limpia la cola de canciones y desconecta al bot del canal de voz
+     * @param event El evento del mensaje que inició la acción (ej: "c!stop").
+     */
+    void stop(MessageReceivedEvent event);
+
+    /**
+     * Pausa la reproducción de la cancion actual.
+     * @param event El evento del mensaje que inició la acción (ej: "c!pause").
+     */
+    void pause(MessageReceivedEvent event);
+
+    /**
+     * Reanuda la reproducción de la canción que estaba en pausa.
+     * @param event El evento del mensaje que inició la acción (ej: "c!resume").
+     */
+    void resume(MessageReceivedEvent event);
+
+    /**
+     * Muestra la lista de reproducciones de canciones.
+     * @param event El evento del mensaje que inició la acción (ej: "c!queue").
+     */
+    void showQueue(MessageReceivedEvent event);
 }
