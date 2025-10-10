@@ -10,14 +10,16 @@ sourceCompatibility = '21'
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.mysql:mysql-connector-j:9.4.0'
-	implementation 'net.dv8tion:JDA:5.0.0'
+	implementation 'com.mysql:mysql-connector-j:8.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'net.dv8tion:JDA:5.0.0-beta.20'
+
+	implementation 'com.github.walkyst:lavaplayer-fork:1.4.3'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -25,6 +27,13 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+
 test {
 	useJUnitPlatform()
+}
+
+configurations.configureEach {
+	resolutionStrategy {
+		force 'org.apache.httpcomponents:httpclient:4.5.13'
+	}
 }
