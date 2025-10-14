@@ -1,7 +1,7 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
 import com.chanchopeludo.ChanchoPeludoBot.music.GuildMusicManager;
-import com.chanchopeludo.ChanchoPeludoBot.music.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -220,39 +220,28 @@ public class MusicServiceImp implements MusicService {
         StringBuilder sb = new StringBuilder();
         sb.append("**").append(MSG_QUEUE_TITLE).append("**\n\n");
 
-        // --- SECCIÓN CORREGIDA PARA LA CANCIÓN ACTUAL ---
         if (currentTrack != null && currentTrack.getUserData() instanceof VideoInfo) {
-            // 1. Obtenemos el objeto VideoInfo que guardamos.
             VideoInfo info = (VideoInfo) currentTrack.getUserData();
-            // 2. Usamos el título correcto desde 'info'.
             sb.append(MSG_NOW_PLAYING).append("`").append(info.title()).append("`\n\n");
         } else if (currentTrack != null) {
-            // Fallback por si acaso no hay userData
             sb.append(MSG_NOW_PLAYING).append("`").append(currentTrack.getInfo().title).append("`\n\n");
         }
-        // --------------------------------------------------
 
         if (!queue.isEmpty()) {
             sb.append(MSG_QUEUE_NEXT_UP).append("\n");
             int count = 1;
-            // --- SECCIÓN CORREGIDA PARA LA COLA ---
             for (AudioTrack track : queue) {
                 if (count > 10) break;
 
-                // Verificamos que la información exista antes de usarla
                 if (track.getUserData() instanceof VideoInfo) {
-                    // 1. Obtenemos el objeto VideoInfo de cada canción en la cola.
                     VideoInfo info = (VideoInfo) track.getUserData();
-                    // 2. Usamos el título correcto desde 'info'.
                     sb.append("`").append(count++).append(".` ")
                             .append(info.title()).append("\n");
                 } else {
-                    // Fallback por si acaso
                     sb.append("`").append(count++).append(".` ")
                             .append(track.getInfo().title).append("\n");
                 }
             }
-            // ---------------------------------------------
         }
 
         event.getChannel().sendMessage(sb.toString()).queue();

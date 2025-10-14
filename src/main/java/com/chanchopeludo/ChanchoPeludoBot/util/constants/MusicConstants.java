@@ -6,6 +6,7 @@ public final class MusicConstants {
 
     // Mensajes de Búsqueda y Estado
     public static final String MSG_SEARCH_MUSIC = "🔍 Buscando...";
+    public static final String MSG_SPOTIFY_PROCESSING = "Procesando enlace de Spotify... 🎶";
     public static final String MSG_TRACK_ADDED = "✅ Añadido a la cola: **";
     public static final String MSG_PLAYLIST_ADDED = "✅ Añadiendo playlist: **";
 
@@ -20,6 +21,7 @@ public final class MusicConstants {
     public static final String MSG_LOAD_FAILED = "⚠️ Error al cargar la canción: ";
     public static final String MSG_YOUTUBE_ERROR = "❌ Error al procesar la solicitud de YouTube: ";
     public static final String MSG_NO_MATCHES_URL = "❌ No se encontró nada en la URL proporcionada.";
+    public static final String MSG_SPOTIFY_FAILURE = "No pude encontrar la información de esa canción en Spotify.";
 
     // Mensajes de Error (Error del Usuario)
     public static final String MSG_NOT_IN_VOICE_CHANNEL = "❌ Debes estar en un canal de voz para usar este comando.";
@@ -32,4 +34,6 @@ public final class MusicConstants {
     public static final String MSG_QUEUE_TITLE = "🎶 Cola de Reproducción";
     public static final String MSG_QUEUE_EMPTY = "La cola de reproducción está vacía.";
     public static final String MSG_QUEUE_NEXT_UP = "A continuación:";
+
+
 }
