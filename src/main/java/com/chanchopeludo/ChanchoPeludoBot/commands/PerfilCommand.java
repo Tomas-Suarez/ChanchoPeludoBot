@@ -1,6 +1,5 @@
-package com.chanchopeludo.ChanchoPeludoBot.commands.imp;
+package com.chanchopeludo.ChanchoPeludoBot.commands;
 
-import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.model.UserServerStatsEntity;
 import com.chanchopeludo.ChanchoPeludoBot.service.UserService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -13,10 +12,10 @@ import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_PROFILE_TEMPLATE;
 
 @Component
-public class PerfilCommandImp implements Command {
+public class PerfilCommand implements Command {
     private final UserService userService;
 
-    public PerfilCommandImp(UserService userService) {
+    public PerfilCommand(UserService userService) {
         this.userService = userService;
     }
 

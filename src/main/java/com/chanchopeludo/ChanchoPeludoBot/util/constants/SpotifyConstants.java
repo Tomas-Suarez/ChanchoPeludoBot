@@ -10,11 +10,12 @@ public final class SpotifyConstants {
 
     // Spotify service
     public static final String URL_NO_ID_WARN = "No se pudo encontrar un ID de track de Spotify en la URL: {}";
+    public static final String URL_INVALID_TRACK_ID = "URL de Spotify no contiene un ID de track válido.";
     public static final String SPOTIFY_SEARCH_INFO = "Buscando información en Spotify para el track ID: {}";
-    public static final String SPOTIFY_NO_RESULT_WARN = "La API de Spotify no devolvió resultados para el ID: {}";
     public static final String SPOTIFY_TRACK_FOUND_INFO = "Track encontrado: '{}' por '{}'";
-    public static final String API_ERROR = "Ocurrió un error al contactar la API de Spotify para el track ID: {}";
+    public static final String ERROR_ASYNC_SPOTIFY = "Error al procesar la URL de Spotify de forma asíncrona";
     public static final String UNKNOWN_ARTIST = "Artista Desconocido";
+    public static final String PLAYLIST_GETTING_ERROR = "Error al obtener la playlist de spotify";
 
     // Play command
     public static final String SPOTIFY_URL_DETECTED = "URL de Spotify detectada: {}";

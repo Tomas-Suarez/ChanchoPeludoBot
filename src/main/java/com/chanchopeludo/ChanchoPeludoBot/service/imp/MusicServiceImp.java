@@ -249,9 +249,11 @@ public class MusicServiceImp implements MusicService {
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, AudioChannel voiceChannel) {
         if (voiceChannel == null) return;
-        if (!guild.getAudioManager().isConnected()) {
-            guild.getAudioManager().openAudioConnection(voiceChannel);
-        }
+
+        guild.getAudioManager().openAudioConnection(voiceChannel);
+
+        guild.getAudioManager().setSelfDeafened(true);
+
         musicManager.getScheduler().queue(track);
     }
 }

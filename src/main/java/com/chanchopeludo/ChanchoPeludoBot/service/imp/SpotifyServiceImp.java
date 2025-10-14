@@ -8,18 +8,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.model_objects.specification.Track;
+import se.michaelthelin.spotify.model_objects.specification.*;
+import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class SpotifyServiceImp implements SpotifyService {
 
     private static final Logger logger = LoggerFactory.getLogger(SpotifyServiceImp.class);
 
-    private static final Pattern SPOTIFY_URL_PATTERN = Pattern.compile("open\\.spotify\\.com/track/([a-zA-Z0-9]+)");
+    private static final Pattern SPOTIFY_URL_PATTERN = Pattern.compile("track/(\\w+)");
+    private static final Pattern SPOTIFY_PLAYLIST_PATTERN = Pattern.compile("playlist/(\\w+)");
+
 
     private final SpotifyApi spotifyApi;
 
@@ -28,41 +37,83 @@ public class SpotifyServiceImp implements SpotifyService {
     }
 
     @Override
-    public Optional<SpotifyTrack> getTrackFromUrl(String url) {
+    public CompletableFuture<Optional<SpotifyTrack>> getTrackFromUrlAsync(String url){
         if (url == null || url.isBlank()) {
-            return Optional.empty();
+            return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        Matcher matcher = SPOTIFY_URL_PATTERN.matcher(url);
-        if (!matcher.find()) {
-            logger.warn(URL_NO_ID_WARN, url);
+        return CompletableFuture.supplyAsync(()->{
+            Matcher matcher = SPOTIFY_URL_PATTERN.matcher(url);
+            if (!matcher.find()) {
+                logger.warn(URL_NO_ID_WARN, url);
+                throw new IllegalStateException(URL_INVALID_TRACK_ID);
+            }
+            String trackId = matcher.group(1);
+
+            try{
+                logger.info(SPOTIFY_SEARCH_INFO, trackId);
+                Track track = spotifyApi.getTrack(trackId).build().execute();
+
+                if (track == null) {
+                    return Optional.<SpotifyTrack>empty();
+                }
+
+                String trackName = track.getName();
+                String artistName = Stream.of(track.getArtists())
+                        .findFirst()
+                        .map(ArtistSimplified::getName)
+                        .orElse(UNKNOWN_ARTIST);
+
+                logger.info(SPOTIFY_TRACK_FOUND_INFO, trackName, artistName);
+
+                return Optional.of(new SpotifyTrack(trackName, artistName));
+
+            }catch (Exception e){
+                throw new RuntimeException(e);
+            }
+        }).exceptionally(ex -> {
+            logger.error(ERROR_ASYNC_SPOTIFY, ex);
             return Optional.empty();
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<SpotifyTrack>> getPlaylistFromUrlAsync(String url) {
+        if (url == null || url.isBlank()) {
+            return CompletableFuture.completedFuture(Collections.emptyList());
         }
 
-        String trackId = matcher.group(1);
-
-        try {
-            logger.info(SPOTIFY_SEARCH_INFO, trackId);
-            Track track = spotifyApi.getTrack(trackId).build().execute();
-
-            if (track == null) {
-                logger.warn(SPOTIFY_NO_RESULT_WARN, trackId);
-                return Optional.empty();
+        return CompletableFuture.supplyAsync(()->{
+            Matcher matcher = SPOTIFY_PLAYLIST_PATTERN.matcher(url);
+            if(!matcher.find()){
+                throw new IllegalArgumentException(URL_INVALID_TRACK_ID);
             }
 
-            String trackName = track.getName();
-            String artistName = (track.getArtists().length > 0)
-                    ? track.getArtists()[0].getName()
-                    : UNKNOWN_ARTIST;
+            String playlistId = matcher.group(1);
 
-            logger.info(SPOTIFY_TRACK_FOUND_INFO, trackName, artistName);
+            try{
+                GetPlaylistsItemsRequest getPlaylistsItemsRequest = spotifyApi.getPlaylistsItems(playlistId)
+                        .build();
 
-            SpotifyTrack spotifyTrack = new SpotifyTrack(trackName, artistName);
-            return Optional.of(spotifyTrack);
+                Paging<PlaylistTrack> playlistTrackPaging = getPlaylistsItemsRequest.execute();
 
-        } catch (Exception e) {
-            logger.error(API_ERROR, trackId, e);
-            return Optional.empty();
-        }
+                return Arrays.stream(playlistTrackPaging.getItems())
+                        .map(playlistTrack -> (Track) playlistTrack.getTrack())
+                        .map(track -> {
+                            String artistName = Stream.of(track.getArtists())
+                                    .findFirst()
+                                    .map(ArtistSimplified::getName)
+                                    .orElse(UNKNOWN_ARTIST);
+                            return new SpotifyTrack(track.getName(), artistName);
+                        })
+                        .collect(Collectors.toList());
+
+            }catch (Exception e){
+                throw new RuntimeException(e);
+            }
+        }).exceptionally(ex->{
+            logger.error(ERROR_ASYNC_SPOTIFY, ex);
+            return Collections.emptyList();
+        });
     }
 }

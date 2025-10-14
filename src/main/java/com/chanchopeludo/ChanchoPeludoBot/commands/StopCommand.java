@@ -1,6 +1,5 @@
-package com.chanchopeludo.ChanchoPeludoBot.commands.imp;
+package com.chanchopeludo.ChanchoPeludoBot.commands;
 
-import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
@@ -10,10 +9,10 @@ import java.util.List;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
 
 @Component
-public class StopCommandImp implements Command {
+public class StopCommand implements Command {
     private final MusicService musicService;
 
-    public StopCommandImp(MusicService musicService) {
+    public StopCommand(MusicService musicService) {
         this.musicService = musicService;
     }
 

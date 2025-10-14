@@ -1,17 +1,16 @@
-package com.chanchopeludo.ChanchoPeludoBot.commands.imp;
+package com.chanchopeludo.ChanchoPeludoBot.commands;
 
-import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class QueueCommandImp implements Command {
+public class QueueCommand implements Command {
 
     private final MusicService musicService;
 
-    public QueueCommandImp(MusicService musicService) {
+    public QueueCommand(MusicService musicService) {
         this.musicService = musicService;
     }
 

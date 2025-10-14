@@ -7,6 +7,7 @@ public final class MusicConstants {
     // Mensajes de Búsqueda y Estado
     public static final String MSG_SEARCH_MUSIC = "🔍 Buscando...";
     public static final String MSG_SPOTIFY_PROCESSING = "Procesando enlace de Spotify... 🎶";
+    public static final String MSG_PLAYLIST_ADDED_COUNT = "✅ Añadiendo %d canciones de la playlist a la cola.";
     public static final String MSG_TRACK_ADDED = "✅ Añadido a la cola: **";
     public static final String MSG_PLAYLIST_ADDED = "✅ Añadiendo playlist: **";
 

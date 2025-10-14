@@ -1,6 +1,5 @@
-package com.chanchopeludo.ChanchoPeludoBot.commands.imp;
+package com.chanchopeludo.ChanchoPeludoBot.commands;
 
-import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
@@ -10,10 +9,10 @@ import java.util.List;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
 
 @Component
-public class PauseCommandImp implements Command {
+public class SkipCommand implements Command {
     private final MusicService musicService;
 
-    public PauseCommandImp(MusicService musicService) {
+    public SkipCommand(MusicService musicService) {
         this.musicService = musicService;
     }
 
@@ -23,11 +22,11 @@ public class PauseCommandImp implements Command {
             event.getChannel().sendMessage(MSG_NOT_IN_VOICE_CHANNEL).queue();
             return;
         }
-        musicService.pause(event);
+        musicService.skipTrack(event);
     }
 
     @Override
     public String getName() {
-        return "pause";
+        return "skip";
     }
 }
