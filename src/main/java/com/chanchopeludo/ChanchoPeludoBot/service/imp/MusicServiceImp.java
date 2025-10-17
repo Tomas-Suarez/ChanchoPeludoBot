@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -33,6 +35,8 @@ public class MusicServiceImp implements MusicService {
 
     private AudioPlayerManager playerManager;
     private final Map<Long, GuildMusicManager> musicManagers;
+    private static final Logger logger = LoggerFactory.getLogger(MusicServiceImp.class);
+
 
     public MusicServiceImp() {
         this.musicManagers = new HashMap<>();
@@ -114,6 +118,7 @@ public class MusicServiceImp implements MusicService {
                     }
                 });
             } catch (IOException | InterruptedException e) {
+                logger.error("Error en loadAndPlay con yt-dlp para: '{}'", trackUrl, e);
                 event.getHook().sendMessage(MSG_YOUTUBE_ERROR + e.getMessage()).queue();
             }
         });
@@ -157,6 +162,7 @@ public class MusicServiceImp implements MusicService {
                     }
                 });
             } catch (IOException | InterruptedException e) {
+                logger.error("Error en loadAndPlayFromMessage con yt-dlp para: '{}'", trackUrl, e);
                 event.getChannel().sendMessage(MSG_YOUTUBE_ERROR + e.getMessage()).queue();
             }
         });
@@ -254,6 +260,7 @@ public class MusicServiceImp implements MusicService {
                 final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
                 final VideoInfo info = getVideoInfo(trackUrl);
                 if (info == null) {
+                    logger.warn("queueTrack no encontró video para: {}", trackUrl);
                     return;
                 }
                 playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
@@ -269,13 +276,16 @@ public class MusicServiceImp implements MusicService {
 
                     @Override
                     public void noMatches() {
+                        logger.warn("queueTrack no encontró coincidencias para: {}", trackUrl);
                     }
 
                     @Override
                     public void loadFailed(FriendlyException e) {
+                        logger.error("Fallo al cargar la canción en queueTrack: {}", info.url(), e);
                     }
                 });
             } catch (IOException | InterruptedException e) {
+                logger.error("Error en queueTrack con yt-dlp para: '{}'", trackUrl, e);
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
@@ -291,6 +301,7 @@ public class MusicServiceImp implements MusicService {
                 final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
                 final VideoInfo info = getVideoInfo(trackUrl);
                 if (info == null) {
+                    logger.warn("playTrackSilently no encontró video para: {}", trackUrl);
                     return;
                 }
                 playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
@@ -309,13 +320,16 @@ public class MusicServiceImp implements MusicService {
 
                     @Override
                     public void noMatches() {
+                        logger.warn("playTrackSilently no encontró coincidencias para: {}", trackUrl);
                     }
 
                     @Override
                     public void loadFailed(FriendlyException exception) {
+                        logger.error("playTrackSilently falló al cargar: {}", trackUrl, exception);
                     }
                 });
             } catch (IOException | InterruptedException e) {
+                logger.error("Error en playTrackSilently con yt-dlp para: '{}'", trackUrl, e);
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
@@ -324,12 +338,13 @@ public class MusicServiceImp implements MusicService {
     }
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, AudioChannel voiceChannel) {
-        if (voiceChannel == null) return;
+        if (voiceChannel == null){
+            logger.warn("El usuario no estaba en un canal de voz al intentar reproducir.");
+            return;
+        }
 
         guild.getAudioManager().openAudioConnection(voiceChannel);
-
         guild.getAudioManager().setSelfDeafened(true);
-
         musicManager.getScheduler().queue(track);
     }
 }

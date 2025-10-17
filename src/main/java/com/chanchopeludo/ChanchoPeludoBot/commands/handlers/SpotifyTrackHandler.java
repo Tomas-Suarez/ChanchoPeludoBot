@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_SPOTIFY_FAILURE;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_SPOTIFY_PROCESSING;
-import static com.chanchopeludo.ChanchoPeludoBot.util.constants.SpotifyConstants.SPOTIFY_URL_DETECTED;
-import static com.chanchopeludo.ChanchoPeludoBot.util.constants.SpotifyConstants.SPOTIFY_URL_TRANSLATED;
 
 @Component
 public class SpotifyTrackHandler implements InputHandler{
@@ -31,17 +29,20 @@ public class SpotifyTrackHandler implements InputHandler{
 
     @Override
     public void handle(MessageReceivedEvent event, String input) {
-        logger.info(SPOTIFY_URL_DETECTED, input);
+        logger.info("Procesando URL de track de Spotify para el servidor '{}': {}", event.getGuild().getId(), input);
         event.getChannel().sendMessage(MSG_SPOTIFY_PROCESSING).queue();
         spotifyService.getTrackFromUrlAsync(input).thenAccept(trackOptional -> {
             trackOptional.ifPresentOrElse(
                     track -> {
                         String finalInput = track.toYoutubeSearchQuery();
-                        logger.info(SPOTIFY_URL_TRANSLATED, finalInput);
+                        logger.info("Servidor '{}': URL de Spotify buscada: {}", event.getGuild().getId(), finalInput);
                         musicService.loadAndPlayFromMessage(event, finalInput);
                     },
                     () -> event.getChannel().sendMessage(MSG_SPOTIFY_FAILURE).queue()
             );
+        }).exceptionally(ex -> {
+            logger.error("Ocurrió una excepción al obtener la cancion para la URL: {}", input, ex);
+            return null;
         });
     }
 }

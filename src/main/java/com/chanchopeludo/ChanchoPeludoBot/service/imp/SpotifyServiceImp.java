@@ -45,13 +45,13 @@ public class SpotifyServiceImp implements SpotifyService {
         return CompletableFuture.supplyAsync(()->{
             Matcher matcher = SPOTIFY_URL_PATTERN.matcher(url);
             if (!matcher.find()) {
-                logger.warn(URL_NO_ID_WARN, url);
+                logger.warn("No se pudo encontrar un ID de track de Spotify en la URL: {}", url);
                 throw new IllegalStateException(URL_INVALID_TRACK_ID);
             }
             String trackId = matcher.group(1);
 
             try{
-                logger.info(SPOTIFY_SEARCH_INFO, trackId);
+                logger.info("Buscando información en Spotify para el track ID: {}", trackId);
                 Track track = spotifyApi.getTrack(trackId).build().execute();
 
                 if (track == null) {
@@ -64,7 +64,7 @@ public class SpotifyServiceImp implements SpotifyService {
                         .map(ArtistSimplified::getName)
                         .orElse(UNKNOWN_ARTIST);
 
-                logger.info(SPOTIFY_TRACK_FOUND_INFO, trackName, artistName);
+                logger.info("Track encontrado: '{}' por '{}", trackName, artistName);
 
                 return Optional.of(new SpotifyTrack(trackName, artistName));
 
@@ -72,7 +72,7 @@ public class SpotifyServiceImp implements SpotifyService {
                 throw new RuntimeException(e);
             }
         }).exceptionally(ex -> {
-            logger.error(ERROR_ASYNC_SPOTIFY, ex);
+            logger.error("Error al procesar la URL de Spotify de forma asíncrona: ", ex);
             return Optional.empty();
         });
     }
@@ -112,7 +112,7 @@ public class SpotifyServiceImp implements SpotifyService {
                 throw new RuntimeException(e);
             }
         }).exceptionally(ex->{
-            logger.error(ERROR_ASYNC_SPOTIFY, ex);
+            logger.error("Error al procesar la URL de Spotify de forma asíncrona", ex);
             return Collections.emptyList();
         });
     }
