@@ -1,5 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -48,4 +49,20 @@ public interface MusicService {
      * @param event El evento del mensaje que inició la acción (ej: "c!queue").
      */
     void showQueue(MessageReceivedEvent event);
-}
+
+    /**
+     * Busca y añade una canción a la cola de forma silenciosa (sin enviar mensajes al canal).
+     * procesar las canciones de una playlist en segundo plano sin generar spam.
+     * @param guild El servidor (Guild) donde se debe encolar la canción.
+     * @param trackUrl La URL de la cancion.
+     */
+    void queueTrack(Guild guild, String trackUrl);
+
+    /**
+     * Inicia la reproducción de una canción de forma silenciosa (sin enviar mensajes al canal).
+     * Si ya hay una canción en reproducción, la añade a la cola. Usado para la primera canción de una playlist.
+     * @param event El evento es usado para obtener el canal de voz y el servidor.
+     * @param trackUrl La URL de la cancion.
+     */
+    void playTrackSilently(MessageReceivedEvent event, String trackUrl);
+    }

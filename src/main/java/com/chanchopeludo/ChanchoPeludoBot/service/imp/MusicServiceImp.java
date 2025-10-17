@@ -165,7 +165,7 @@ public class MusicServiceImp implements MusicService {
     @Override
     public void skipTrack(MessageReceivedEvent event) {
         GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
-        if(musicManager.getPlayer().getPlayingTrack() == null){
+        if (musicManager.getPlayer().getPlayingTrack() == null) {
             event.getChannel().sendMessage(MSG_SKIP_FAIL).queue();
             return;
         }
@@ -186,7 +186,7 @@ public class MusicServiceImp implements MusicService {
     @Override
     public void pause(MessageReceivedEvent event) {
         GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
-        if(musicManager.getPlayer().isPaused()){
+        if (musicManager.getPlayer().isPaused()) {
             event.getChannel().sendMessage(MSG_ALREADY_PAUSED).queue();
         }
 
@@ -245,6 +245,82 @@ public class MusicServiceImp implements MusicService {
         }
 
         event.getChannel().sendMessage(sb.toString()).queue();
+    }
+
+    @Override
+    public void queueTrack(Guild guild, String trackUrl) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+                final VideoInfo info = getVideoInfo(trackUrl);
+                if (info == null) {
+                    return;
+                }
+                playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
+                    @Override
+                    public void trackLoaded(AudioTrack track) {
+                        track.setUserData(info);
+                        musicManager.getScheduler().queue(track);
+                    }
+
+                    @Override
+                    public void playlistLoaded(AudioPlaylist audioPlaylist) {
+                    }
+
+                    @Override
+                    public void noMatches() {
+                    }
+
+                    @Override
+                    public void loadFailed(FriendlyException e) {
+                    }
+                });
+            } catch (IOException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void playTrackSilently(MessageReceivedEvent event, String trackUrl) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                final Guild guild = event.getGuild();
+                final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+                final VideoInfo info = getVideoInfo(trackUrl);
+                if (info == null) {
+                    return;
+                }
+                playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
+                    @Override
+                    public void trackLoaded(AudioTrack track) {
+                        track.setUserData(info);
+                        play(guild, musicManager, track, event.getMember().getVoiceState().getChannel());
+                    }
+
+                    @Override
+                    public void playlistLoaded(AudioPlaylist playlist) {
+                        if (!playlist.getTracks().isEmpty()) {
+                            play(guild, musicManager, playlist.getTracks().get(0), event.getMember().getVoiceState().getChannel());
+                        }
+                    }
+
+                    @Override
+                    public void noMatches() {
+                    }
+
+                    @Override
+                    public void loadFailed(FriendlyException exception) {
+                    }
+                });
+            } catch (IOException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
     }
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, AudioChannel voiceChannel) {
