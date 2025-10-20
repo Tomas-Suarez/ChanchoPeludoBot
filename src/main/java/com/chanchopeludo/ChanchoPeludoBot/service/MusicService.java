@@ -65,4 +65,12 @@ public interface MusicService {
      * @param trackUrl La URL de la cancion.
      */
     void playTrackSilently(MessageReceivedEvent event, String trackUrl);
+
+    /**
+     * Ajusta el volumen de reproducción del bot de música.
+     * @param event El evento del mensaje que inició la acción (ej: "c!volume 80").
+     * @param valueVolume El nuevo nivel de volumen, expresado como un porcentaje (0 a 100).
+     *                    Un valor de 100 representa el volumen máximo, mientras que 0 silencia la reproducción.
+     */
+    void volume(MessageReceivedEvent event, int valueVolume);
     }

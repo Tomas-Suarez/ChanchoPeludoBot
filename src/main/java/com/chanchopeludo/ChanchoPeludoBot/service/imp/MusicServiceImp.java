@@ -213,6 +213,18 @@ public class MusicServiceImp implements MusicService {
     }
 
     @Override
+    public void volume(MessageReceivedEvent event, int valueVolume) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        if (valueVolume < 0 || valueVolume > 100) {
+            event.getChannel().sendMessage(MSG_INVALID_VALUE_VOLUME).queue();
+            return;
+        }
+
+        musicManager.getPlayer().setVolume(valueVolume);
+        event.getChannel().sendMessage(String.format(MSG_VOLUME_MUSIC, valueVolume)).queue();
+    }
+
+    @Override
     public void showQueue(MessageReceivedEvent event) {
         GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
         BlockingQueue<AudioTrack> queue = musicManager.getScheduler().getQueue();
@@ -338,7 +350,7 @@ public class MusicServiceImp implements MusicService {
     }
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, AudioChannel voiceChannel) {
-        if (voiceChannel == null){
+        if (voiceChannel == null) {
             logger.warn("El usuario no estaba en un canal de voz al intentar reproducir.");
             return;
         }

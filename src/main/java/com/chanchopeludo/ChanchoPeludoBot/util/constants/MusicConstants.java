@@ -10,6 +10,7 @@ public final class MusicConstants {
     public static final String MSG_PLAYLIST_ADDED_COUNT = "✅ Añadiendo **%d** canciones de la playlist a la cola.";
     public static final String MSG_TRACK_ADDED = "✅ Añadido a la cola: **";
     public static final String MSG_PLAYLIST_ADDED = "✅ Añadiendo playlist: **";
+    public static final String MSG_VOLUME_MUSIC = "🔊 Volumen establecido a **%d%%**";
 
     // Mensajes de Control de Reproducción
     public static final String MSG_NOW_PLAYING = "🎶 Reproduciendo ahora: ";
@@ -30,6 +31,7 @@ public final class MusicConstants {
     public static final String MSG_SKIP_FAIL = "❌ No hay más canciones en la cola para saltar.";
     public static final String MSG_ALREADY_PAUSED = "⚠️ El reproductor ya está en pausa.";
     public static final String MSG_NOT_PAUSED = "⚠️ El reproductor no está en pausa.";
+    public static final String MSG_INVALID_VALUE_VOLUME = "❌ Uso correcto: `c!volume <1-100>`";
 
     // Mensajes para el Comando de Cola (Queue)
     public static final String MSG_QUEUE_TITLE = "🎶 Cola de Reproducción";
