@@ -2,6 +2,7 @@ package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
 import com.chanchopeludo.ChanchoPeludoBot.music.GuildMusicManager;
 import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.music.TrackScheduler;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -222,6 +223,21 @@ public class MusicServiceImp implements MusicService {
 
         musicManager.getPlayer().setVolume(valueVolume);
         event.getChannel().sendMessage(String.format(MSG_VOLUME_MUSIC, valueVolume)).queue();
+    }
+
+    @Override
+    public void shuffle(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        TrackScheduler scheduler = musicManager.getScheduler();
+
+        if (scheduler.getQueue().isEmpty()) {
+            event.getChannel().sendMessage(MSG_SHUFFLE_FAILED).queue();
+            return;
+        }
+
+        scheduler.shuffle();
+
+        event.getChannel().sendMessage(MSG_SHUFFLE_PLAYLIST).queue();
     }
 
     @Override
