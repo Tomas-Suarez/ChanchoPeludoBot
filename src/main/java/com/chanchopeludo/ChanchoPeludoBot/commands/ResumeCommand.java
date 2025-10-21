@@ -4,6 +4,7 @@ import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
@@ -26,7 +27,7 @@ public class ResumeCommand implements Command {
     }
 
     @Override
-    public String getName() {
-        return "resume";
+    public List<String> getNames() {
+        return Arrays.asList("resume");
     }
 }

@@ -15,11 +15,15 @@ import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.DEF
 @Service
 public class CommandManagerImpl implements CommandManager {
 
-    private final Map<String, Command> commands = new HashMap<>();
+    private final Map<String, Command> commandMap;
 
     public CommandManagerImpl(List<Command> commandList) {
+        this.commandMap = new HashMap<>();
+
         for (Command command : commandList) {
-            commands.put(command.getName().toLowerCase(), command);
+            for (String name : command.getNames()) {
+                this.commandMap.put(name.toLowerCase(), command);
+            }
         }
     }
 
@@ -30,7 +34,7 @@ public class CommandManagerImpl implements CommandManager {
         String[] parts = content.split("\\s+");
         String commandName = parts[0].toLowerCase();
 
-        Command command = commands.get(commandName);
+        Command command = this.commandMap.get(commandName);
 
         if (command != null) {
             List<String> args = Arrays.asList(parts).subList(1, parts.length);

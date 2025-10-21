@@ -3,6 +3,8 @@ package com.chanchopeludo.ChanchoPeludoBot.commands;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -20,7 +22,7 @@ public class QueueCommand implements Command {
     }
 
     @Override
-    public String getName() {
-        return "queue";
+    public List<String> getNames() {
+        return Arrays.asList("queue");
     }
 }

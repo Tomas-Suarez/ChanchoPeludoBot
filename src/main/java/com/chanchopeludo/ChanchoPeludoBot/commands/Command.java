@@ -17,5 +17,5 @@ public interface Command {
      * Devuelve el nombre con el que se invoca el comando.
      * @return El nombre del comando (ej: "play", "perfil").
      */
-    String getName();
+    List<String> getNames();
 }

@@ -5,6 +5,7 @@ import com.chanchopeludo.ChanchoPeludoBot.service.UserService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ public class PerfilCommand implements Command {
     }
 
     @Override
-    public String getName() {
-        return "perfil";
+    public List<String> getNames() {
+        return Arrays.asList("perfil");
     }
 }

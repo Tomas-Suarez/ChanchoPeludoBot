@@ -4,6 +4,7 @@ import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -21,7 +22,7 @@ public class NowPlayingCommand implements Command {
     }
 
     @Override
-    public String getName() {
-        return "nowplaying";
+    public List<String> getNames() {
+        return Arrays.asList("nowplaying", "np");
     }
 }
