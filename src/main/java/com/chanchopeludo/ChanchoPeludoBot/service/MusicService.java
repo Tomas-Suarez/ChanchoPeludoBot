@@ -84,11 +84,17 @@ public interface MusicService {
      */
     void volume(MessageReceivedEvent event, int valueVolume);
 
-
     /**
      * Mezcla la cola de reproducción actual.
      *
      * @param event El evento del mensaje que inició la acción (ej: "c!shuffle").
      */
     void shuffle(MessageReceivedEvent event);
+
+    /**
+     * Muestra que canción se encuentra reproduciendo en este momento.
+     *
+     * @param event El evento del mensaje que inició la acción (ej: "c!nowplaying" o "c!np").
+     */
+    void nowPlaying(MessageReceivedEvent event);
 }

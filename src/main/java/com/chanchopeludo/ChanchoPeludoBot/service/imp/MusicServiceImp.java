@@ -241,6 +241,30 @@ public class MusicServiceImp implements MusicService {
     }
 
     @Override
+    public void nowPlaying(MessageReceivedEvent event) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
+        AudioTrack currentTrack = musicManager.getPlayer().getPlayingTrack();
+
+        if (currentTrack == null) {
+            event.getChannel().sendMessage(MSG_NOTHING_PLAYING).queue();
+            return;
+        }
+
+        String title;
+
+        if (currentTrack.getUserData() instanceof VideoInfo customInfo) {
+            title = customInfo.title();
+        } else {
+
+            title = currentTrack.getInfo().title;
+        }
+
+        String message = MSG_NOW_PLAYING + " `" + title + "`";
+
+        event.getChannel().sendMessage(message).queue();
+    }
+
+    @Override
     public void showQueue(MessageReceivedEvent event) {
         GuildMusicManager musicManager = getGuildAudioPlayer(event.getGuild());
         BlockingQueue<AudioTrack> queue = musicManager.getScheduler().getQueue();
