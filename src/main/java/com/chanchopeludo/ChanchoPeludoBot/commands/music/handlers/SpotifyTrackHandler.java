@@ -25,12 +25,11 @@ public class SpotifyTrackHandler implements InputHandler {
 
     @Override
     public boolean canHandle(String input) {
-        // ¡Usamos el helper que creamos!
         return isSpotifyTrack(input);
     }
 
     @Override
-    public void handle(long guildId, long voiceChannelId, String input, Consumer<PlayResult> reply) {
+    public void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
         logger.info("Procesando URL de track de Spotify para el servidor '{}': {}", guildId, input);
 
         spotifyService.getTrackFromUrlAsync(input).thenAccept(trackOptional -> {
@@ -39,7 +38,7 @@ public class SpotifyTrackHandler implements InputHandler {
                         String finalInput = track.toYoutubeSearchQuery();
                         logger.info("Servidor '{}': URL de Spotify buscada: {}", guildId, finalInput);
 
-                        musicService.loadAndPlay(guildId, voiceChannelId, finalInput)
+                        musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, finalInput)
                                 .thenAccept(reply);
                     },
                     () -> {

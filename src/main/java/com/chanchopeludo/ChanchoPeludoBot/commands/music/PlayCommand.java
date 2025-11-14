@@ -44,7 +44,8 @@ public class PlayCommand implements Command {
         }
 
         long guildId = event.getGuild().getIdLong();
-        long channelId = userChannel.getIdLong();
+        long voiceChannelId = userChannel.getIdLong();
+        long textChannelId = event.getChannel().getIdLong();
         String input = event.getOption("url").getAsString();
 
         event.deferReply().setContent(MSG_SEARCH_MUSIC).queue();
@@ -52,7 +53,7 @@ public class PlayCommand implements Command {
         Consumer<PlayResult> reply = (result) ->
                 event.getHook().sendMessage(result.message()).queue();
 
-        handlePlayLogic(guildId, channelId, input, reply);
+        handlePlayLogic(guildId, voiceChannelId, textChannelId, input, reply);
     }
 
     @Override
@@ -70,7 +71,8 @@ public class PlayCommand implements Command {
         }
 
         long guildId = event.getGuild().getIdLong();
-        long channelId = userChannel.getIdLong();
+        long voiceChannelId = userChannel.getIdLong();
+        long textChannelId = event.getChannel().getIdLong();
         String input = String.join(" ", args);
 
         event.getChannel().sendMessage(MSG_SEARCH_MUSIC).queue();
@@ -78,14 +80,14 @@ public class PlayCommand implements Command {
         Consumer<PlayResult> responder = (result) ->
                 event.getChannel().sendMessage(result.message()).queue();
 
-        handlePlayLogic(guildId, channelId, input, responder);
+        handlePlayLogic(guildId, voiceChannelId, textChannelId, input, responder);
     }
 
-    private void handlePlayLogic(long guildId, long channelId, String input, Consumer<PlayResult> reply) {
+    private void handlePlayLogic(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
 
         for (InputHandler handler : handlers) {
             if (handler.canHandle(input)) {
-                handler.handle(guildId, channelId, input, reply);
+                handler.handle(guildId, voiceChannelId, textChannelId, input, reply);
 
                 return;
             }

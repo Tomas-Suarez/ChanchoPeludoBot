@@ -169,4 +169,13 @@ public class EmbedHelper {
 
         return eb.build();
     }
+
+    public static MessageEmbed buildDisconnectEmbed() {
+        return new EmbedBuilder()
+                .setTitle("👋 ¡Desconectado por inactividad!")
+                .setDescription("Me desconecté del canal de voz por estar 5 minutos inactivo.")
+                .setColor(Color.YELLOW)
+                .setTimestamp(Instant.now())
+                .build();
+    }
 }

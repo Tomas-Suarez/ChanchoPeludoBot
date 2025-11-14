@@ -23,8 +23,8 @@ public class YoutubeUrlHandler implements InputHandler{
     }
 
     @Override
-    public void handle(long guildId, long voiceChannelId, String input, Consumer<PlayResult> reply) {
-        musicService.loadAndPlay(guildId, voiceChannelId, input)
+    public void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
+        musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, input)
                 .thenAccept(reply);
     }
 }

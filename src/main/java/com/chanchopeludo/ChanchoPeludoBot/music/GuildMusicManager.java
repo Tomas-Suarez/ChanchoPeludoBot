@@ -2,29 +2,23 @@ package com.chanchopeludo.ChanchoPeludoBot.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import lombok.Data;
+import net.dv8tion.jda.api.managers.AudioManager;
 
+@Data
 public class GuildMusicManager {
 
     private final AudioPlayer player;
     private final TrackScheduler scheduler;
     private final AudioPlayerSendHandler sendHandler;
 
-    public GuildMusicManager(AudioPlayerManager manager) {
-        this.player = manager.createPlayer();
-        this.scheduler = new TrackScheduler(this.player);
-        this.player.addListener(this.scheduler);
-        this.sendHandler = new AudioPlayerSendHandler(this.player);
-    }
+    private long lastTextChannelId;
 
-    public AudioPlayer getPlayer() {
-        return player;
-    }
 
-    public TrackScheduler getScheduler() {
-        return scheduler;
-    }
-
-    public AudioPlayerSendHandler getSendHandler() {
-        return sendHandler;
+    public GuildMusicManager(AudioPlayerManager manager, AudioManager audioManager) {
+        player = manager.createPlayer();
+        scheduler = new TrackScheduler(player, this, audioManager);
+        player.addListener(scheduler);
+        sendHandler = new AudioPlayerSendHandler(player);
     }
 }

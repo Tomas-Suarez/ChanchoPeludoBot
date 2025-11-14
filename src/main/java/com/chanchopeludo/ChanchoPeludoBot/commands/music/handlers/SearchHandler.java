@@ -3,6 +3,7 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers;
 import com.chanchopeludo.ChanchoPeludoBot.dto.PlayResult;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import org.springframework.stereotype.Component;
+
 import java.util.function.Consumer;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.ValidationHelper.isUrl;
@@ -21,11 +22,10 @@ public class SearchHandler implements InputHandler {
     }
 
     @Override
-    public void handle(long guildId, long voiceChannelId, String input, Consumer<PlayResult> response) {
-
+    public void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> response) {
         String search = "ytsearch:" + input;
 
-        musicService.loadAndPlay(guildId, voiceChannelId, search)
+        musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, search)
                 .thenAccept(response);
     }
 }

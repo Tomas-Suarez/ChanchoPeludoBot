@@ -29,7 +29,7 @@ public class SpotifyPlayListHandler implements InputHandler {
     }
 
     @Override
-    public void handle(long guildId, long voiceChannelId, String input, Consumer<PlayResult> reply) {
+    public void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
         logger.info("Procesando URL de playlist de Spotify para el servidor '{}': {}", guildId, input);
 
         spotifyService.getPlaylistFromUrlAsync(input).thenAccept(tracks -> {
@@ -43,7 +43,7 @@ public class SpotifyPlayListHandler implements InputHandler {
             SpotifyTrack firstTrack = tracks.get(0);
             String firstTrackQuery = firstTrack.toYoutubeSearchQuery();
 
-            musicService.playTrackSilently(guildId, voiceChannelId, firstTrackQuery)
+            musicService.playTrackSilently(guildId, voiceChannelId, textChannelId, firstTrackQuery)
                     .thenAccept(playResult -> {
 
                         if (!playResult.success()) {
@@ -53,7 +53,7 @@ public class SpotifyPlayListHandler implements InputHandler {
                         for (int i = 1; i < tracks.size(); i++) {
                             SpotifyTrack track = tracks.get(i);
                             String trackQuery = track.toYoutubeSearchQuery();
-                            musicService.queueTrack(guildId, trackQuery);
+                            musicService.queueTrack(guildId, textChannelId, trackQuery);
                         }
 
                         reply.accept(new PlayResult(true, String.format(MSG_PLAYLIST_ADDED_COUNT, tracks.size())));

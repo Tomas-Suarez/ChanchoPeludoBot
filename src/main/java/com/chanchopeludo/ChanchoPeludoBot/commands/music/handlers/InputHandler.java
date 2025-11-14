@@ -8,4 +8,5 @@ public interface InputHandler {
 
     boolean canHandle(String input);
 
-    void handle(long guildId, long voiceChannelId, String input, Consumer<PlayResult> reply);}
+    void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply);
+}

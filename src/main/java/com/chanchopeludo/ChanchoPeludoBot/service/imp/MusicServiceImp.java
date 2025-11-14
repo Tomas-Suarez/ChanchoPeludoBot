@@ -57,7 +57,7 @@ public class MusicServiceImp implements MusicService {
     private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
         GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
         if (musicManager == null) {
-            musicManager = new GuildMusicManager(playerManager);
+            musicManager = new GuildMusicManager(playerManager, guild.getAudioManager());
             musicManagers.put(guild.getIdLong(), musicManager);
         }
         guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
@@ -65,8 +65,8 @@ public class MusicServiceImp implements MusicService {
     }
 
     @Override
-    public CompletableFuture<PlayResult> loadAndPlay(long guildId, long voiceChannelId, String trackUrl) {
-        CompletableFuture<PlayResult> futureResult = new CompletableFuture<>();
+    public CompletableFuture<PlayResult> loadAndPlay(long guildId, long voiceChannelId, long textChannelId, String trackUrl){
+    CompletableFuture<PlayResult> futureResult = new CompletableFuture<>();
 
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) {
@@ -80,6 +80,8 @@ public class MusicServiceImp implements MusicService {
         }
 
         final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+
+        musicManager.setLastTextChannelId(textChannelId);
 
         videoInfoService.getVideoInfo(trackUrl)
                 .thenAccept(info -> {
@@ -248,7 +250,7 @@ public class MusicServiceImp implements MusicService {
     }
 
     @Override
-    public CompletableFuture<PlayResult> queueTrack(long guildId, String trackUrl) {
+    public CompletableFuture<PlayResult> queueTrack(long guildId, long textChannelId, String trackUrl) {
         CompletableFuture<PlayResult> future = new CompletableFuture<>();
 
         Guild guild = jda.getGuildById(guildId);
@@ -258,6 +260,8 @@ public class MusicServiceImp implements MusicService {
         }
 
         final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+
+        musicManager.setLastTextChannelId(textChannelId);
 
         videoInfoService.getVideoInfo(trackUrl)
                 .thenAccept(info -> {
@@ -300,7 +304,7 @@ public class MusicServiceImp implements MusicService {
     }
 
     @Override
-    public CompletableFuture<PlayResult> playTrackSilently(long guildId, long voiceChannelId, String trackUrl) {
+    public CompletableFuture<PlayResult> playTrackSilently(long guildId, long voiceChannelId, long textChannelId, String trackUrl) {
         CompletableFuture<PlayResult> future = new CompletableFuture<>();
 
         Guild guild = jda.getGuildById(guildId);
@@ -315,6 +319,8 @@ public class MusicServiceImp implements MusicService {
         }
 
         final GuildMusicManager musicManager = getGuildAudioPlayer(guild);
+
+        musicManager.setLastTextChannelId(textChannelId);
 
         videoInfoService.getVideoInfo(trackUrl)
                 .thenAccept(info -> {

@@ -15,8 +15,7 @@ public interface MusicService {
      * @param trackUrl       La URL de la canción a reproducir.
      * @return Un CompletableFuture que nos retorna un PlayResult con el estado y mensaje
      */
-    CompletableFuture<PlayResult> loadAndPlay(long guildId, long voiceChannelId, String trackUrl);
-
+    CompletableFuture<PlayResult> loadAndPlay(long guildId, long voiceChannelId, long textChannelId, String trackUrl);
     /**
      * Saltea la canción que se encuentra reproduciendo y comienza la siguiente en la cola.
      *
@@ -65,8 +64,7 @@ public interface MusicService {
      * @param trackUrl La URL de la cancion.
      * @return Un CompletableFuture que nos retorna un PlayResult con el estado y mensaje
      */
-    CompletableFuture<PlayResult> queueTrack(long guildId, String trackUrl);
-
+    CompletableFuture<PlayResult> queueTrack(long guildId, long textChannelId, String trackUrl);
     /**
      * Inicia la reproducción de una canción de forma silenciosa (sin enviar mensajes al canal).
      * Si ya hay una canción en reproducción, la añade a la cola. Usado para la primera canción de una playlist.
@@ -76,7 +74,7 @@ public interface MusicService {
      * @param trackUrl       La URL de la cancion.
      * @return Un CompletableFuture que nos retorna un PlayResult con el estado y mensaje
      */
-    CompletableFuture<PlayResult> playTrackSilently(long guildId, long voiceChannelId, String trackUrl);
+    CompletableFuture<PlayResult> playTrackSilently(long guildId, long voiceChannelId, long textChannelId, String trackUrl);
 
     /**
      * Ajusta el volumen de reproducción del bot de música.
