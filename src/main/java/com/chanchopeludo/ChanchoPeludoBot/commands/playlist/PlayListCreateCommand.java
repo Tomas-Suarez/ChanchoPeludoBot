@@ -6,7 +6,9 @@ import com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -15,34 +17,8 @@ import java.util.List;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.GenericConstants.TITLE_ERROR_MISSING_ARGS;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.PlayListConstants.*;
 
-//@Component
+@Component
 public class PlayListCreateCommand implements Command {
-    @Override
-    public CommandData getSlashCommandData() {
-        return null;
-    }
-
-    @Override
-    public void executeSlash(SlashCommandInteractionEvent event) {
-
-    }
-
-    @Override
-    public void executeText(MessageReceivedEvent event, List<String> args) {
-
-    }
-
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
-    public List<String> getTextNames() {
-        return List.of();
-    }
-
-    /*
 
     private final PlayListService playListService;
 
@@ -51,7 +27,25 @@ public class PlayListCreateCommand implements Command {
     }
 
     @Override
-    public void handle(MessageReceivedEvent event, List<String> args) {
+    public CommandData getSlashCommandData() {
+        return Commands.slash("playlist-create", "Crea una nueva playlist vacía.")
+                .addOption(OptionType.STRING, "nombre", "El nombre para tu nueva playlist.", true);
+    }
+
+    @Override
+    public void executeSlash(SlashCommandInteractionEvent event) {
+
+        String playlistName = event.getOption("nombre").getAsString();
+        String serverId = event.getGuild().getId();
+        String creatorId = event.getUser().getId();
+
+        MessageEmbed embed = handleCreatePlaylist(serverId, creatorId, playlistName);
+        event.replyEmbeds(embed).queue();
+    }
+
+    @Override
+    public void executeText(MessageReceivedEvent event, List<String> args) {
+
         if (args.isEmpty()) {
             MessageEmbed embed = EmbedHelper.buildErrorEmbed(
                     TITLE_ERROR_MISSING_ARGS,
@@ -64,26 +58,31 @@ public class PlayListCreateCommand implements Command {
         String serverId = event.getGuild().getId();
         String creatorId = event.getAuthor().getId();
 
+        MessageEmbed embed = handleCreatePlaylist(serverId, creatorId, playlistName);
+        event.getChannel().sendMessageEmbeds(embed).queue();
+    }
+
+    private MessageEmbed handleCreatePlaylist(String serverId, String creatorId, String playlistName) {
         try {
             playListService.createPlayList(playlistName, serverId, creatorId);
 
-            MessageEmbed embed = EmbedHelper.buildSuccessEmbed(
+            return EmbedHelper.buildSuccessEmbed(
                     TITLE_PLAYLIST_CREATED,
                     String.format(DESC_PLAYLIST_CREATED, playlistName)
             );
-            event.getChannel().sendMessageEmbeds(embed).queue();
         } catch (Exception e) {
-
-            MessageEmbed embed = EmbedHelper.buildErrorEmbed(TITLE_ERROR_PLAYLIST_CREATE,
+            return EmbedHelper.buildErrorEmbed(TITLE_ERROR_PLAYLIST_CREATE,
                     e.getMessage());
-            event.getChannel().sendMessageEmbeds(embed).queue();
         }
     }
 
     @Override
-    public List<String> getNames() {
-        return Arrays.asList("playlist-create", "pl-create");
+    public String getName() {
+        return "playlist-create";
     }
 
-     */
+    @Override
+    public List<String> getTextNames() {
+        return Arrays.asList("playlist-create", "pl-create");
+    }
 }

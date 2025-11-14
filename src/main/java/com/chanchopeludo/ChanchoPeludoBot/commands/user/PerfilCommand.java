@@ -37,11 +37,6 @@ public class PerfilCommand implements Command {
         User user = event.getUser();
         Guild guild = event.getGuild();
 
-        if (guild == null) {
-            event.reply("Este comando solo se puede usar en un servidor.").setEphemeral(true).queue();
-            return;
-        }
-
         Optional<UserServerStatsEntity> optionalProfile = userService.getProfile(user.getId(), guild.getId());
 
         MessageEmbed embed = buildPerfilEmbed(user, optionalProfile);
@@ -53,11 +48,6 @@ public class PerfilCommand implements Command {
     public void executeText(MessageReceivedEvent event, List<String> args) {
         User user = event.getAuthor();
         Guild guild = event.getGuild();
-
-        if (!event.isFromGuild()) {
-            event.getChannel().sendMessage("Este comando solo se puede usar en un servidor.").queue();
-            return;
-        }
 
         Optional<UserServerStatsEntity> optionalProfile = userService.getProfile(user.getId(), guild.getId());
 
