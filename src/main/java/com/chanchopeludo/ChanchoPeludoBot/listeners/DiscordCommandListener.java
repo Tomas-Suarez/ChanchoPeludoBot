@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.springframework.stereotype.Component;
 
@@ -89,7 +90,7 @@ public class DiscordCommandListener extends ListenerAdapter {
                     .withDisabled(newPage >= totalPages);
 
             event.editMessageEmbeds(newEmbed)
-                    .setActionRow(newPrevButton, newNextButton)
+                    .setComponents(ActionRow.of(newPrevButton, newNextButton))
                     .queue();
 
         } else if (componentId.startsWith("help:")) {
@@ -118,7 +119,7 @@ public class DiscordCommandListener extends ListenerAdapter {
                     .withDisabled(newPage >= totalPages);
 
             event.editMessageEmbeds(newEmbed)
-                    .setActionRow(newPrevButton, newNextButton)
+                    .setComponents(ActionRow.of(newPrevButton, newNextButton))
                     .queue();
         }
     }

@@ -5,67 +5,70 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.LayoutComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.HELP_TOTAL_PAGES;
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildHelpEmbed;
 
-//@Component
+@Component
 public class HelpCommand implements Command {
     @Override
     public CommandData getSlashCommandData() {
-        return null;
+        return Commands.slash("help", "Muestra la lista de comandos del bot.");
     }
 
     @Override
     public void executeSlash(SlashCommandInteractionEvent event) {
-
-    }
-
-    @Override
-    public void executeText(MessageReceivedEvent event, List<String> args) {
-
-    }
-
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
-    public List<String> getTextNames() {
-        return List.of();
-    }
-/*
-
-    private final int TOTAL_PAGES = 3;
-
-    @Override
-    public void handle(MessageReceivedEvent event, List<String> args) {
         int currentPage = 1;
 
         MessageEmbed helpEmbed = buildHelpEmbed(
                 event.getJDA().getSelfUser(),
                 currentPage,
-                TOTAL_PAGES
+                HELP_TOTAL_PAGES
         );
 
         Button prevButton = Button.primary("help:prev:" + currentPage, "Anterior").withDisabled(true);
-        Button nextButton = Button.primary("help:next:" + currentPage, "Siguiente").withDisabled(false);
+        Button nextButton = Button.primary("help:next:" + currentPage, "Siguiente")
+                .withDisabled(currentPage >= HELP_TOTAL_PAGES);
 
-        event.getChannel().sendMessageEmbeds(helpEmbed)
-                .setActionRow(prevButton, nextButton)
+        event.replyEmbeds(helpEmbed)
+                .setComponents(ActionRow.of(prevButton, nextButton))
                 .queue();
     }
 
     @Override
-    public List<String> getNames() {
-        return Arrays.asList("help");
+    public void executeText(MessageReceivedEvent event, List<String> args) {
+        int currentPage = 1;
+
+        MessageEmbed helpEmbed = buildHelpEmbed(
+                event.getJDA().getSelfUser(),
+                currentPage,
+                HELP_TOTAL_PAGES
+        );
+
+        Button prevButton = Button.primary("help:prev:" + currentPage, "Anterior").withDisabled(true);
+        Button nextButton = Button.primary("help:next:" + currentPage, "Siguiente")
+                .withDisabled(currentPage >= HELP_TOTAL_PAGES);
+
+        event.getChannel().sendMessageEmbeds(helpEmbed)
+                .setComponents(ActionRow.of(prevButton, nextButton))
+                .queue();
     }
 
+    @Override
+    public String getName() {
+        return "help";
+    }
 
- */
+    @Override
+    public List<String> getTextNames() {
+        return Arrays.asList("help");
+    }
 }

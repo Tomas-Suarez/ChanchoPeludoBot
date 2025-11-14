@@ -3,14 +3,20 @@ package com.chanchopeludo.ChanchoPeludoBot.util.helpers;
 import com.chanchopeludo.ChanchoPeludoBot.dto.AudioTrackInfo;
 import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
 
+import com.chanchopeludo.ChanchoPeludoBot.model.UserServerStatsEntity;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_HELP_FOOTER;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_PROFILE_NOT_FOUND;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
 
 public class EmbedHelper {
@@ -139,5 +145,28 @@ public class EmbedHelper {
                 .setDescription(message)
                 .setColor(Color.RED)
                 .build();
+    }
+
+    public static MessageEmbed buildPerfilEmbed(User user, Optional<UserServerStatsEntity> optionalProfile) {
+
+        if (optionalProfile.isEmpty()) {
+            return buildErrorEmbed("Perfil no encontrado", MSG_PROFILE_NOT_FOUND);
+        }
+
+        UserServerStatsEntity profile = optionalProfile.get();
+        EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle("Perfil de " + user.getName());
+
+        eb.setThumbnail(user.getEffectiveAvatarUrl());
+
+        eb.setColor(new Color(0x3498DB));
+
+        eb.addField("Nivel", String.valueOf(profile.getLevel()), false);
+        eb.addField("XP", String.valueOf(profile.getXp()), false);
+
+        eb.setFooter("¡Sigue hablando para ganar más XP!", user.getJDA().getSelfUser().getEffectiveAvatarUrl());
+
+        return eb.build();
     }
 }
