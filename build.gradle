@@ -10,16 +10,17 @@ sourceCompatibility = '21'
 
 repositories {
 	mavenCentral()
-	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.mysql:mysql-connector-j:8.4.0'
+	implementation 'com.mysql:mysql-connector-j'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'net.dv8tion:JDA:5.0.0-beta.24'
+
+	implementation 'net.dv8tion:JDA:5.6.1'
 
 	implementation 'dev.arbjerg:lavaplayer:2.2.2'
+
 	implementation 'com.google.code.gson:gson:2.11.0'
 	implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.3.0'
 
@@ -29,13 +30,6 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-
 test {
 	useJUnitPlatform()
-}
-
-configurations.configureEach {
-	resolutionStrategy {
-		force 'org.apache.httpcomponents:httpclient:4.5.13'
-	}
 }
