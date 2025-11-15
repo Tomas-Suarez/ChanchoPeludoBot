@@ -90,7 +90,22 @@ public class PlayListServiceImp implements PlayListService {
     }
 
     @Override
-    public void loadPlayList(String name, MessageReceivedEvent event) {
+    @Transactional
+    public PlayListEntity loadPlayList(String playlistName, String serverId){
+
+        ServerEntity server = serverRepository.findById(serverId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+
+        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+
+        List<PlayListItemEntity> items = playlist.getItems();
+
+        if(items.isEmpty()){
+            throw new RuntimeException("La playlist '" + playlistName + "' está vacía.");
+        }
+
+        return playlist;
 
     }
 }

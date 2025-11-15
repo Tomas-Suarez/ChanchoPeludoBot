@@ -1,22 +1,21 @@
 package com.chanchopeludo.ChanchoPeludoBot.service;
 
+import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.List;
 
 public interface PlayListService {
 
-    void createPlayList(String name, String serverId, String creatorId);
+    void createPlayList(String playlistName, String guildId, String creatorId);
 
-    void addTrackToPlayList(String playlistName, String serverId, String title, String trackIdentifier);
+    void addTrackToPlayList(String playlistName, String guildId, String title, String trackIdentifier);
 
-    void deletePlayList(String name, String serverId);
+    void deletePlayList(String playlistName, String guildId);
 
-    void removeTrack(String playlistName, int trackOrder, String serverId);
+    void removeTrack(String playlistName, int trackOrder, String guildId);
 
     List<PlayListItemEntity> listPlayLists();
 
-    void loadPlayList(String name, MessageReceivedEvent event);
-
+    PlayListEntity loadPlayList(String playlistName, String guildId);
 }

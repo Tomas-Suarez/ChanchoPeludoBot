@@ -7,6 +7,7 @@ public final class PlayListConstants {
     // Mensajes de uso
     public static final String PLAYLIST_USAGE_CREATE = "Uso correcto: `c!playlist create <Nombre>`";
     public static final String PLAYLIST_USAGE_ADD = "Uso correcto: `c!playlist add <Nombre-Playlist> <URL o Búsqueda>`";
+    public static final String PLAYLIST_USAGE_LOAD = "Uso correcto: `c!playlist load <Nombre-Playlist>`";
 
     //Títulos para embeds
     public static final String TITLE_ERROR_PLAYLIST_CREATE = "Error al crear playlist";
