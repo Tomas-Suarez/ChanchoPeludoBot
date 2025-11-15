@@ -71,7 +71,7 @@ public class PlayListCreateCommand implements Command {
                     String.format(DESC_PLAYLIST_CREATED, playlistName)
             );
         } catch (Exception e) {
-            return EmbedHelper.buildErrorEmbed(TITLE_ERROR_PLAYLIST_CREATE,
+            return EmbedHelper.buildErrorEmbed(TITLE_ERROR_PLAYLIST,
                     e.getMessage());
         }
     }

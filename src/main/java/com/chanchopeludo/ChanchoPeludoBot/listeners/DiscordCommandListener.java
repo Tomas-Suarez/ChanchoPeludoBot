@@ -3,6 +3,7 @@ package com.chanchopeludo.ChanchoPeludoBot.listeners;
 import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
 import com.chanchopeludo.ChanchoPeludoBot.service.CommandManager;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
+import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import com.chanchopeludo.ChanchoPeludoBot.service.UserService;
 import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.JDA;
@@ -16,9 +17,9 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.springframework.stereotype.Component;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.DEFAULT_PREFIX;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.PlayListConstants.*;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.XpConstants.XP_PER_MESSAGE;
-import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildHelpEmbed;
-import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildQueueEmbed;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.*;
 
 @Component
 public class DiscordCommandListener extends ListenerAdapter {
@@ -27,12 +28,14 @@ public class DiscordCommandListener extends ListenerAdapter {
     private final CommandManager commandManager;
     private final MusicService musicService;
     private final UserService userService;
+    private final PlayListService playListService;
 
-    public DiscordCommandListener(JDA jda, CommandManager commandManager, MusicService musicService, UserService userService) {
+    public DiscordCommandListener(JDA jda, CommandManager commandManager, MusicService musicService, UserService userService, PlayListService playListService) {
         this.jda = jda;
         this.commandManager = commandManager;
         this.musicService = musicService;
         this.userService = userService;
+        this.playListService = playListService;
     }
 
     @PostConstruct
@@ -121,6 +124,38 @@ public class DiscordCommandListener extends ListenerAdapter {
             event.editMessageEmbeds(newEmbed)
                     .setComponents(ActionRow.of(newPrevButton, newNextButton))
                     .queue();
+        } else if (componentId.startsWith("pl-delete")) {
+            String[] idParts = componentId.split(":");
+            String action = idParts[1];
+
+            event.editComponents(
+                    event.getMessage().getActionRows().get(0).withDisabled(true)
+            ).queue();
+
+            if (action.equals("cancel")) {
+                MessageEmbed embed = buildSuccessEmbed("Cancelado", "La operación fue cancelada.");
+                event.getHook().editOriginalEmbeds(embed).queue();
+                return;
+            }
+
+            if (action.equals("confirm")) {
+                String playlistName = idParts[2];
+                String guildId = event.getGuild().getId();
+
+                try {
+                    playListService.deletePlayList(playlistName, guildId);
+
+                    MessageEmbed embed = buildSuccessEmbed(
+                            TITLE_PLAYLIST_DELETED,
+                            String.format(DESC_PLAYLIST_DELETED, playlistName)
+                    );
+                    event.getHook().editOriginalEmbeds(embed).queue();
+
+                } catch (Exception e) {
+                    MessageEmbed embed = buildErrorEmbed(TITLE_ERROR_PLAYLIST, e.getMessage());
+                    event.getHook().editOriginalEmbeds(embed).queue();
+                }
+            }
         }
     }
 }

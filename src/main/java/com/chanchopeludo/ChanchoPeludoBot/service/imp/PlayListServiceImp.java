@@ -33,20 +33,20 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public void createPlayList(String name, String serverId, String creatorId) {
-        ServerEntity server = serverRepository.findById(serverId)
+    public void createPlayList(String playlistName, String guildId, String creatorId) {
+        ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
         UserEntity creator = userRepository.findById(creatorId)
                 .orElseThrow(()-> new EntityNotFoundException("No se encontró el usuario creador!"));
 
         //TODO: Implementar una excepción personalizada mas adelante
-        if(playListRepository.findByNameAndServer(name, server).isPresent()){
+        if(playListRepository.findByNameAndServer(playlistName, server).isPresent()){
             throw new RuntimeException("Ya se encuentra otra playlist con el nombre que proporcionaste.");
         }
 
         PlayListEntity newPlayList = PlayListEntity.builder()
-                .name(name)
+                .name(playlistName)
                 .is_public(false)
                 .server(server)
                 .creator(creator)
@@ -57,8 +57,8 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public void addTrackToPlayList(String playlistName, String serverId, String title, String trackIdentifier) {
-        ServerEntity server = serverRepository.findById(serverId)
+    public void addTrackToPlayList(String playlistName, String guildId, String title, String trackIdentifier) {
+        ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
         PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
@@ -75,12 +75,20 @@ public class PlayListServiceImp implements PlayListService {
     }
 
     @Override
-    public void deletePlayList(String name, String serverId) {
+    public void deletePlayList(String playlistName, String guildId) {
+        ServerEntity server = serverRepository.findById(guildId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+
+        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+
+        playListRepository.delete(playlist);
 
     }
 
     @Override
-    public void removeTrack(String playlistName, int trackOrder, String serverId) {
+    public void removeTrack(String playlistName, int trackOrder, String guildId) {
+
 
     }
 
@@ -91,9 +99,9 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public PlayListEntity loadPlayList(String playlistName, String serverId){
+    public PlayListEntity loadPlayList(String playlistName, String guildId){
 
-        ServerEntity server = serverRepository.findById(serverId)
+        ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
         PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
