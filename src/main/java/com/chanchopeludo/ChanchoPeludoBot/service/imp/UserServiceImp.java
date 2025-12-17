@@ -20,7 +20,7 @@ import static com.chanchopeludo.ChanchoPeludoBot.util.constants.XpConstants.INIT
 @Service
 public class UserServiceImp implements UserService {
 
-    private final UserRepository  userRepository;
+    private final UserRepository userRepository;
     private final ServerRepository serverRepository;
     private final UserServerStatsRepository statsRepository;
 
@@ -38,27 +38,27 @@ public class UserServiceImp implements UserService {
 
     @Override
     @Transactional
-    public void addExp(String userId, String serverId, long xpToAdd) {
+    public void addExp(String userId, String username, String serverId, String serverName, long xpToAdd) {
         UserEntity user = userRepository.findById(userId)
                 .orElse(UserEntity.builder()
                         .idUser(userId)
-                        .username(DEFAULT_USERNAME)
                         .profile_image_url(null)
                         .build());
+
+        user.setUsername(username);
         userRepository.save(user);
 
         ServerEntity server = serverRepository.findById(serverId)
                 .orElse(ServerEntity.builder()
                         .idServer(serverId)
-                        .guild_name(DEFAULT_GUILD_NAME)
                         .prefix(DEFAULT_PREFIX)
                         .build());
+
+        server.setGuild_name(serverName);
         serverRepository.save(server);
 
         UserServerStatsId statsId = new UserServerStatsId(userId, serverId);
-        Optional<UserServerStatsEntity> optionalStats = statsRepository.findById(statsId);
-
-        UserServerStatsEntity stats = optionalStats.orElse(
+        UserServerStatsEntity stats = statsRepository.findById(statsId).orElse(
                 UserServerStatsEntity.builder()
                         .user(user)
                         .server(server)
@@ -69,7 +69,6 @@ public class UserServiceImp implements UserService {
 
         long currentXp = stats.getXp();
         stats.setXp(currentXp + xpToAdd);
-
         stats.setLevel(LevelingHelper.calculateLevel(stats.getXp()));
 
         statsRepository.save(stats);

@@ -1,6 +1,7 @@
 package com.chanchopeludo.ChanchoPeludoBot.listeners;
 
 import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
+import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.service.CommandManager;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
@@ -55,9 +56,12 @@ public class DiscordCommandListener extends ListenerAdapter {
         }
 
         String userId = event.getAuthor().getId();
-        String serverId = event.getGuild().getId();
+        String username = event.getAuthor().getName();
 
-        userService.addExp(userId, serverId, XP_PER_MESSAGE);
+        String serverId = event.getGuild().getId();
+        String serverName = event.getGuild().getName();
+
+        userService.addExp(userId, username, serverId, serverName, XP_PER_MESSAGE);
 
         commandManager.handle(event);
     }
@@ -95,6 +99,47 @@ public class DiscordCommandListener extends ListenerAdapter {
             event.editMessageEmbeds(newEmbed)
                     .setComponents(ActionRow.of(newPrevButton, newNextButton))
                     .queue();
+
+        } else if (componentId.startsWith("pl-view:")) {
+
+            String[] idParts = componentId.split(":", 4);
+
+            String action = idParts[1];
+            int currentPage = Integer.parseInt(idParts[2]);
+            String playlistName = idParts[3];
+            String guildId = event.getGuild().getId();
+
+            try {
+                PlayListEntity playlist = playListService.viewPlayList(playlistName, guildId);
+                var items = playlist.getItems();
+
+                int itemsPerPage = 10;
+                int totalPages = (int) Math.ceil((double) items.size() / itemsPerPage);
+                if (totalPages == 0) totalPages = 1;
+
+                int newPage = currentPage;
+                if (action.equals("next")) {
+                    newPage = Math.min(currentPage + 1, totalPages);
+                } else if (action.equals("prev")) {
+                    newPage = Math.max(currentPage - 1, 1);
+                }
+
+                MessageEmbed newEmbed = buildPlaylistViewEmbed(playlist, newPage);
+
+                Button newPrevButton = Button.primary("pl-view:prev:" + newPage + ":" + playlistName, "Anterior")
+                        .withDisabled(newPage == 1);
+                Button newNextButton = Button.primary("pl-view:next:" + newPage + ":" + playlistName, "Siguiente")
+                        .withDisabled(newPage >= totalPages);
+
+                event.editMessageEmbeds(newEmbed)
+                        .setComponents(ActionRow.of(newPrevButton, newNextButton))
+                        .queue();
+
+            } catch (Exception e) {
+                event.replyEmbeds(buildErrorEmbed("Error", "No se pudo actualizar la lista: " + e.getMessage()))
+                        .setEphemeral(true)
+                        .queue();
+            }
 
         } else if (componentId.startsWith("help:")) {
             String[] idParts = componentId.split(":");

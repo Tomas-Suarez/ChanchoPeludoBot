@@ -99,6 +99,20 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
+    public PlayListEntity viewPlayList(String playlistName, String guildId) {
+        ServerEntity server = serverRepository.findById(guildId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+
+        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+
+        playlist.getItems().size();
+
+        return playlist;
+    }
+
+    @Override
+    @Transactional
     public PlayListEntity loadPlayList(String playlistName, String guildId){
 
         ServerEntity server = serverRepository.findById(guildId)

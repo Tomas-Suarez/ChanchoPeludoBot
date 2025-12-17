@@ -3,6 +3,8 @@ package com.chanchopeludo.ChanchoPeludoBot.util.helpers;
 import com.chanchopeludo.ChanchoPeludoBot.dto.AudioTrackInfo;
 import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
 
+import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
+import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.UserServerStatsEntity;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -177,5 +179,42 @@ public class EmbedHelper {
                 .setColor(Color.YELLOW)
                 .setTimestamp(Instant.now())
                 .build();
+    }
+
+    public static MessageEmbed buildPlaylistViewEmbed(PlayListEntity playlist, int page) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("📂 Playlist: " + playlist.getName());
+        eb.setColor(0x1DB954);
+
+        String creatorMention = "<@" + playlist.getCreator().getIdUser() + ">";
+        String serverName = playlist.getServer().getGuild_name();
+
+        eb.addField("👤 Creador", creatorMention, false);
+        eb.addField("🏠 Servidor origen", serverName, false);
+
+        List<PlayListItemEntity> items = playlist.getItems();
+        int itemsPerPage = 10;
+        int totalPages = (int) Math.ceil((double) items.size() / itemsPerPage);
+        if (totalPages == 0) totalPages = 1;
+
+        page = Math.max(1, Math.min(page, totalPages));
+
+        if (items.isEmpty()) {
+            eb.setDescription("☁️ La playlist está vacía.");
+        } else {
+            int start = (page - 1) * itemsPerPage;
+            int end = Math.min(start + itemsPerPage, items.size());
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = start; i < end; i++) {
+                PlayListItemEntity item = items.get(i);
+                sb.append(String.format("`%d.` %s\n", (i + 1), item.getTitle()));
+            }
+            eb.setDescription(sb.toString());
+        }
+
+        eb.setFooter(String.format("Página %d de %d (Total: %d canciones)", page, totalPages, items.size()));
+
+        return eb.build();
     }
 }

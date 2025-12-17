@@ -17,5 +17,7 @@ public interface PlayListService {
 
     List<PlayListItemEntity> listPlayLists();
 
+    PlayListEntity viewPlayList(String playlistName, String guildId);
+
     PlayListEntity loadPlayList(String playlistName, String guildId);
 }

@@ -9,6 +9,8 @@ public final class PlayListConstants {
     public static final String PLAYLIST_USAGE_ADD = "Uso correcto: `c!playlist add <Nombre-Playlist> <URL o Búsqueda>`";
     public static final String PLAYLIST_USAGE_LOAD = "Uso correcto: `c!playlist load <Nombre-Playlist>`";
     public static final String PLAYLIST_USAGE_DELETE = "Uso correcto: `c!playlist delete <Nombre-Playlist>`";
+    public static final String PLAYLIST_USAGE_VIEW = "Uso correcto: `c!playlist view <Nombre-Playlist>`";
+
 
 
     //Títulos para embeds
