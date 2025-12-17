@@ -19,5 +19,7 @@ public interface PlayListService {
 
     PlayListEntity viewPlayList(String playlistName, String guildId);
 
-    PlayListEntity loadPlayList(String playlistName, String guildId);
+    List<PlayListEntity> searchPlaylists(String playlistName, String guildId);
+
+    PlayListEntity loadPlayListById(Long playlistId, String requesterId);
 }

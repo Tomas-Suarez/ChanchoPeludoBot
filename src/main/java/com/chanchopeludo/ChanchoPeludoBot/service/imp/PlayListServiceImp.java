@@ -11,7 +11,6 @@ import com.chanchopeludo.ChanchoPeludoBot.repository.UserRepository;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -113,21 +112,41 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public PlayListEntity loadPlayList(String playlistName, String guildId){
-
+    public List<PlayListEntity> searchPlaylists(String playlistName, String guildId) {
         ServerEntity server = serverRepository.findById(guildId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+                .orElseThrow(() -> new EntityNotFoundException("Servidor no encontrado"));
 
-        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+        List<PlayListEntity> playlists = playListRepository.searchByNameAndServerOrPublic(playlistName, server);
 
-        List<PlayListItemEntity> items = playlist.getItems();
+        for (PlayListEntity pl : playlists) {
+            pl.getCreator().getUsername();
 
-        if(items.isEmpty()){
-            throw new RuntimeException("La playlist '" + playlistName + "' está vacía.");
+            pl.getServer().getGuild_name();
+
+            pl.getItems().size();
+        }
+
+        return playlists;
+    }
+
+    @Override
+    @Transactional
+    public PlayListEntity loadPlayListById(Long playlistId, String requesterId) {
+        PlayListEntity playlist = playListRepository.findById(playlistId)
+                .orElseThrow(() -> new EntityNotFoundException("Playlist no encontrada con ID: " + playlistId));
+
+        if (!playlist.is_public() && !playlist.getCreator().getIdUser().equals(requesterId)) {
+            throw new RuntimeException("Esta playlist es privada.");
+        }
+
+        playlist.getItems().size();
+        playlist.getCreator().getUsername();
+        playlist.getServer().getGuild_name();
+
+        if (playlist.getItems().isEmpty()) {
+            throw new RuntimeException("La playlist está vacía.");
         }
 
         return playlist;
-
     }
 }

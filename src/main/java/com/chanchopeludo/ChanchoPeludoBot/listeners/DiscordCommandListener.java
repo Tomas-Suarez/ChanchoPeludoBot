@@ -2,6 +2,7 @@ package com.chanchopeludo.ChanchoPeludoBot.listeners;
 
 import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
+import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 import com.chanchopeludo.ChanchoPeludoBot.service.CommandManager;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -200,6 +202,42 @@ public class DiscordCommandListener extends ListenerAdapter {
                     MessageEmbed embed = buildErrorEmbed(TITLE_ERROR_PLAYLIST, e.getMessage());
                     event.getHook().editOriginalEmbeds(embed).queue();
                 }
+            }
+        }
+    }
+
+    @Override
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        if (event.getComponentId().equals("pl-load-select")) {
+            String selectedPlaylistIdStr = event.getValues().get(0);
+            Long playlistId = Long.parseLong(selectedPlaylistIdStr);
+
+            if (event.getMember().getVoiceState().getChannel() == null) {
+                event.reply("¡Debes estar en un canal de voz!").setEphemeral(true).queue();
+                return;
+            }
+
+            try {
+                PlayListEntity playlist = playListService.loadPlayListById(playlistId, event.getUser().getId());
+
+                long guildId = event.getGuild().getIdLong();
+                long voiceChannelId = event.getMember().getVoiceState().getChannel().getIdLong();
+                long textChannelId = event.getChannel().getIdLong();
+
+                for (PlayListItemEntity item : playlist.getItems()) {
+                    musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, item.getTrack_Identifier());
+                }
+
+                String msg = "Cargando **" + playlist.getItems().size() + "** canciones de la playlist **" + playlist.getName() + "**.";
+                MessageEmbed embed = buildSuccessEmbed("Playlist Cargada", msg);
+
+                event.editMessageEmbeds(embed)
+                        .setContent("")
+                        .setComponents()
+                        .queue();
+
+            } catch (Exception e) {
+                event.reply("Error al cargar: " + e.getMessage()).setEphemeral(true).queue();
             }
         }
     }
