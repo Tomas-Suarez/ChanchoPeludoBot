@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -52,9 +53,10 @@ public class PlayListLoadCommand implements Command {
 
         String playlistName = event.getOption("nombre").getAsString();
         String guildId = event.getGuild().getId();
+        String userId = event.getUser().getId();
 
         try {
-            List<PlayListEntity> candidates = playListService.searchPlaylists(playlistName, guildId);
+            List<PlayListEntity> candidates = playListService.viewPlayList(playlistName, guildId, userId);
 
             if (candidates.isEmpty()) {
                 event.replyEmbeds(buildErrorEmbed("No encontrada", "No encontré ninguna playlist llamada '**" + playlistName + "**'.")).setEphemeral(true).queue();
@@ -67,7 +69,7 @@ public class PlayListLoadCommand implements Command {
                 event.replyEmbeds(embed).queue();
             } else {
                 StringSelectMenu menu = buildSelectMenu(candidates);
-                event.reply("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres?")
+                event.reply("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres cargar?")
                         .addActionRow(menu)
                         .setEphemeral(true)
                         .queue();
@@ -93,9 +95,10 @@ public class PlayListLoadCommand implements Command {
 
         String playlistName = String.join(" ", args);
         String guildId = event.getGuild().getId();
+        String userId = event.getAuthor().getId();
 
         try {
-            List<PlayListEntity> candidates = playListService.searchPlaylists(playlistName, guildId);
+            List<PlayListEntity> candidates = playListService.viewPlayList(playlistName, guildId, userId);
 
             if (candidates.isEmpty()) {
                 event.getChannel().sendMessageEmbeds(buildErrorEmbed("No encontrada", "No encontré ninguna playlist llamada '**" + playlistName + "**'.")).queue();
@@ -108,13 +111,44 @@ public class PlayListLoadCommand implements Command {
                 event.getChannel().sendMessageEmbeds(embed).queue();
             } else {
                 StringSelectMenu menu = buildSelectMenu(candidates);
-                event.getChannel().sendMessage("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres?")
+                event.getChannel().sendMessage("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres cargar?")
                         .setActionRow(menu)
                         .queue();
             }
 
         } catch (Exception e) {
             event.getChannel().sendMessageEmbeds(buildErrorEmbed("Error", e.getMessage())).queue();
+        }
+    }
+
+    @Override
+    public boolean handlesMenu(String componentId) {
+        return componentId.equals("pl-load-select");
+    }
+
+    @Override
+    public void onMenuInteraction(StringSelectInteractionEvent event) {
+        Member member = event.getMember();
+        if (member == null || member.getVoiceState() == null || !member.getVoiceState().inAudioChannel()) {
+            event.reply(MSG_NOT_IN_VOICE_CHANNEL).setEphemeral(true).queue();
+            return;
+        }
+
+        String selectedIdStr = event.getValues().get(0);
+
+        try {
+            Long playlistId = Long.parseLong(selectedIdStr);
+            PlayListEntity playlist = playListService.loadPlayListById(playlistId, event.getUser().getId());
+
+            MessageEmbed embed = loadAndPlay(playlist, member, event.getChannel());
+
+            event.editMessageEmbeds(embed)
+                    .setContent("")
+                    .setComponents()
+                    .queue();
+
+        } catch (Exception e) {
+            event.reply("Error al cargar: " + e.getMessage()).setEphemeral(true).queue();
         }
     }
 
@@ -142,7 +176,7 @@ public class PlayListLoadCommand implements Command {
         candidates.stream()
                 .limit(DISCORD_MENU_LIMIT)
                 .forEach(pl -> {
-                    String label = pl.getName() + " (" + pl.getServer().getGuild_name() + ")";
+                    String label = pl.getName();
                     String description = "👤 " + pl.getCreator().getUsername() + " | 🎵 " + pl.getItems().size() + " canciones";
                     menuBuilder.addOption(label, String.valueOf(pl.getId()), description);
                 });

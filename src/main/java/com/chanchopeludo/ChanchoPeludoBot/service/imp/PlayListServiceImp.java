@@ -56,11 +56,14 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public void addTrackToPlayList(String playlistName, String guildId, String title, String trackIdentifier) {
+    public void addTrackToPlayList(String playlistName, String guildId, String userId, String title, String trackIdentifier) {
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
-        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        PlayListEntity playlist = playListRepository.findByNameAndServerAndCreator(playlistName, server, user)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
 
         PlayListItemEntity newTrack = PlayListItemEntity.builder()
@@ -74,11 +77,14 @@ public class PlayListServiceImp implements PlayListService {
     }
 
     @Override
-    public void deletePlayList(String playlistName, String guildId) {
+    public void deletePlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
-        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario!"));
+
+        PlayListEntity playlist = playListRepository.findByNameAndServerAndCreator(playlistName, server, user)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
 
         playListRepository.delete(playlist);
@@ -98,16 +104,25 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public PlayListEntity viewPlayList(String playlistName, String guildId) {
+    public List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
-        PlayListEntity playlist = playListRepository.findByNameAndServer(playlistName, server)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario!"));
 
-        playlist.getItems().size();
+        List<PlayListEntity> playlists = playListRepository.searchForLoad(playlistName, server, user);
 
-        return playlist;
+        if (playlists.isEmpty()) {
+            throw new EntityNotFoundException("No encontré ninguna playlist llamada '" + playlistName + "' (ni tuya ni pública).");
+        }
+
+        for (PlayListEntity pl : playlists) {
+            pl.getItems().size();
+            pl.getCreator().getUsername();
+        }
+
+        return playlists;
     }
 
     @Override

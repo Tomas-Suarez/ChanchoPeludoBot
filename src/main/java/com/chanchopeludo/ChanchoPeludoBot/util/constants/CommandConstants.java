@@ -18,4 +18,6 @@ public final class CommandConstants {
     public static final String MSG_HELP_FOOTER = "Página %d / %d";
 
     public static final int HELP_TOTAL_PAGES = 1;
+
+    public static final int ITEMS_PER_PAGE = 10;
 }

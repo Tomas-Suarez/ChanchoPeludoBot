@@ -55,8 +55,9 @@ public class PlayListAddCommand implements Command {
         String playlistName = event.getOption("playlist").getAsString();
         String trackQuery = event.getOption("cancion").getAsString();
         String serverId = event.getGuild().getId();
+        String userId = event.getUser().getId();
 
-        MessageEmbed embed = handleAddTrack(serverId, playlistName, trackQuery);
+        MessageEmbed embed = handleAddTrack(serverId, playlistName, trackQuery, userId);
 
         event.replyEmbeds(embed).queue();
     }
@@ -75,13 +76,14 @@ public class PlayListAddCommand implements Command {
                 .stream()
                 .collect(Collectors.joining(" "));
         String serverId = event.getGuild().getId();
+        String userId = event.getAuthor().getId();
 
-        MessageEmbed embed = handleAddTrack(serverId, playlistName, trackQuery);
+        MessageEmbed embed = handleAddTrack(serverId, playlistName, trackQuery, userId);
 
         event.getChannel().sendMessageEmbeds(embed).queue();
     }
 
-    private MessageEmbed handleAddTrack(String serverId, String playlistName, String trackQuery) {
+    private MessageEmbed handleAddTrack(String serverId, String playlistName, String trackQuery, String userId) {
         String title;
         String trackIdentifier;
 
@@ -110,7 +112,7 @@ public class PlayListAddCommand implements Command {
                 trackIdentifier = "ytsearch:" + trackQuery;
             }
 
-            playListService.addTrackToPlayList(playlistName, serverId, title, trackIdentifier);
+            playListService.addTrackToPlayList(playlistName, serverId, userId, title, trackIdentifier);
 
             return buildSuccessEmbed(
                     TITLE_TRACK_ADDED,

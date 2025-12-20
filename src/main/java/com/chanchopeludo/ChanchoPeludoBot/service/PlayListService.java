@@ -9,15 +9,15 @@ public interface PlayListService {
 
     void createPlayList(String playlistName, String guildId, String creatorId);
 
-    void addTrackToPlayList(String playlistName, String guildId, String title, String trackIdentifier);
+    void addTrackToPlayList(String playlistName, String guildId, String userId, String title, String trackIdentifier);
 
-    void deletePlayList(String playlistName, String guildId);
+    void deletePlayList(String playlistName, String guildId, String userId);
 
     void removeTrack(String playlistName, int trackOrder, String guildId);
 
     List<PlayListItemEntity> listPlayLists();
 
-    PlayListEntity viewPlayList(String playlistName, String guildId);
+    List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId);
 
     List<PlayListEntity> searchPlaylists(String playlistName, String guildId);
 
