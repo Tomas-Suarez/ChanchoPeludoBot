@@ -10,13 +10,13 @@ public final class PlayListConstants {
     public static final String PLAYLIST_USAGE_LOAD = "Uso correcto: `c!playlist load <Nombre-Playlist>`";
     public static final String PLAYLIST_USAGE_DELETE = "Uso correcto: `c!playlist delete <Nombre-Playlist>`";
     public static final String PLAYLIST_USAGE_VIEW = "Uso correcto: `c!playlist view <Nombre-Playlist>`";
-
-
+    public static final String PLAYLIST_USAGE_RENAME = "Uso: `c!playlist rename <Nombre Actual> <Nombre Nuevo>`";
 
     //Títulos para embeds
     public static final String TITLE_ERROR_PLAYLIST = "Error playlist";
     public static final String TITLE_PLAYLIST_CREATED = "Playlist Creada";
     public static final String TITLE_PLAYLIST_DELETED = "Playlist Eliminada";
+    public static final String TITLE_PLAYLIST_RENAMED = "Playlist Renombrada";
     public static final String TITLE_TRACK_ADDED = "Canción añadida";
     public static final String TITLE_ERROR_PLAYLIST_ADD = "Error al añadir canción";
 
@@ -26,7 +26,6 @@ public final class PlayListConstants {
             "Usa `c!pl-add` para agregar canciones.";
     public static final String DESC_PLAYLIST_DELETED = "La playlist **%s** ha sido eliminada con éxito.";
     public static final String DESC_TRACK_ADDED = "Se añadió **%s** a la playlist **%s**.";
-
-
+    public static final String DESC_PLAYLIST_RENAMED = "La playlist **%s** fue renombrada a **%s** con exito.";
 
 }

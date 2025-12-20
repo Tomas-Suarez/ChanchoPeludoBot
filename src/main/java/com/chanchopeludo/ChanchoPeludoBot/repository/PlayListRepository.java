@@ -33,4 +33,8 @@ public interface PlayListRepository extends JpaRepository<PlayListEntity, Long> 
     List<PlayListEntity> searchForLoad(@Param("name") String name,
                                        @Param("server") ServerEntity server,
                                        @Param("creator") UserEntity creator);
+
+    Optional<PlayListEntity> findByNameAndServer_IdServerAndCreator_IdUser(String name, String guildId, String userId);
+
+    boolean existsByNameAndServer_IdServerAndCreator_IdUser(String name, String guildId, String userId);
 }

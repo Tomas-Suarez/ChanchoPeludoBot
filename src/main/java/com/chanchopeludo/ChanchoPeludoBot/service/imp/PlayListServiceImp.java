@@ -19,13 +19,11 @@ import java.util.List;
 public class PlayListServiceImp implements PlayListService {
 
     private final PlayListRepository playListRepository;
-    private final PlayListItemRepository playListItemRepository;
     private final UserRepository userRepository;
     private final ServerRepository serverRepository;
 
-    public PlayListServiceImp(PlayListRepository playListRepository, PlayListItemRepository playListItemRepository, UserRepository userRepository, ServerRepository serverRepository) {
+    public PlayListServiceImp(PlayListRepository playListRepository, UserRepository userRepository, ServerRepository serverRepository) {
         this.playListRepository = playListRepository;
-        this.playListItemRepository = playListItemRepository;
         this.userRepository = userRepository;
         this.serverRepository = serverRepository;
     }
@@ -163,5 +161,25 @@ public class PlayListServiceImp implements PlayListService {
         }
 
         return playlist;
+    }
+
+    @Override
+    @Transactional
+    public void renamePlayList(String oldPlayListName, String newPlayListName, String guildId, String userId) {
+
+        if (oldPlayListName.equalsIgnoreCase(newPlayListName)) {
+            return;
+        }
+
+        PlayListEntity playList = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(oldPlayListName, guildId, userId)
+                .orElseThrow(()-> new RuntimeException("No se encontro ninguna playlist con el nombre: " + oldPlayListName));
+
+        if(playListRepository.existsByNameAndServer_IdServerAndCreator_IdUser(newPlayListName, guildId, userId)){
+            throw new RuntimeException("Ya tienes una playlist con el mismo nombre en este servidor!");
+        }
+
+        playList.setName(newPlayListName);
+        playListRepository.save(playList);
+
     }
 }

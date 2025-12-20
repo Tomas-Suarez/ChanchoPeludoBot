@@ -26,11 +26,11 @@ public class PlayListEntity {
 
     private boolean is_public;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "server_id", nullable = false)
     private ServerEntity server;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "creator_user_id", nullable = false)
     private UserEntity creator;
 
