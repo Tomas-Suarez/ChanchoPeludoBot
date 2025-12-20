@@ -125,25 +125,6 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public List<PlayListEntity> searchPlaylists(String playlistName, String guildId) {
-        ServerEntity server = serverRepository.findById(guildId)
-                .orElseThrow(() -> new EntityNotFoundException("Servidor no encontrado"));
-
-        List<PlayListEntity> playlists = playListRepository.searchByNameAndServerOrPublic(playlistName, server);
-
-        for (PlayListEntity pl : playlists) {
-            pl.getCreator().getUsername();
-
-            pl.getServer().getGuild_name();
-
-            pl.getItems().size();
-        }
-
-        return playlists;
-    }
-
-    @Override
-    @Transactional
     public PlayListEntity loadPlayListById(Long playlistId, String requesterId) {
         PlayListEntity playlist = playListRepository.findById(playlistId)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist no encontrada con ID: " + playlistId));
@@ -181,5 +162,15 @@ public class PlayListServiceImp implements PlayListService {
         playList.setName(newPlayListName);
         playListRepository.save(playList);
 
+    }
+
+    @Override
+    @Transactional
+    public void updateVisibility(String playListName, boolean isPublic, String guildId, String userId) {
+        PlayListEntity playList = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(playListName, guildId, userId)
+                .orElseThrow(()-> new RuntimeException("No se encontró tu playlist llamada: " + playListName));
+
+        playList.set_public(isPublic);
+        playListRepository.save(playList);
     }
 }

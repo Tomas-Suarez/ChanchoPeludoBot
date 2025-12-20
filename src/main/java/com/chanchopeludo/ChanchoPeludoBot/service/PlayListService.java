@@ -19,9 +19,9 @@ public interface PlayListService {
 
     List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId);
 
-    List<PlayListEntity> searchPlaylists(String playlistName, String guildId);
-
     PlayListEntity loadPlayListById(Long playlistId, String requesterId);
 
     void renamePlayList(String oldPlayListName, String newPlayListName, String guildId, String userId);
+
+    void updateVisibility(String playListName, boolean isPublic, String guidId, String userId);
 }
