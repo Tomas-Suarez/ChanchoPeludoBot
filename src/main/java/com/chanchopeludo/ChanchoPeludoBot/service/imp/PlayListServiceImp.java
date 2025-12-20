@@ -40,8 +40,8 @@ public class PlayListServiceImp implements PlayListService {
                 .orElseThrow(()-> new EntityNotFoundException("No se encontró el usuario creador!"));
 
         //TODO: Implementar una excepción personalizada mas adelante
-        if(playListRepository.findByNameAndServer(playlistName, server).isPresent()){
-            throw new RuntimeException("Ya se encuentra otra playlist con el nombre que proporcionaste.");
+        if (playListRepository.existsByNameIgnoreCaseAndServerAndCreator(playlistName, server, creator)) {
+            throw new IllegalArgumentException("Ya tienes una playlist llamada '**" + playlistName + "**'.");
         }
 
         PlayListEntity newPlayList = PlayListEntity.builder()

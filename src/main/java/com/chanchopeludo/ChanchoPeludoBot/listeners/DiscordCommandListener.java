@@ -237,7 +237,12 @@ public class DiscordCommandListener extends ListenerAdapter {
                         .queue();
 
             } catch (Exception e) {
-                event.reply("Error al cargar: " + e.getMessage()).setEphemeral(true).queue();
+                MessageEmbed embed = buildErrorEmbed("Error", e.getMessage());
+
+                event.editMessageEmbeds(embed)
+                        .setContent("")
+                        .setComponents()
+                        .queue();
             }
         }
     }

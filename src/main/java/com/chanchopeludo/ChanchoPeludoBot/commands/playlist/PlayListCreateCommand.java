@@ -36,10 +36,10 @@ public class PlayListCreateCommand implements Command {
     public void executeSlash(SlashCommandInteractionEvent event) {
 
         String playlistName = event.getOption("nombre").getAsString();
-        String serverId = event.getGuild().getId();
+        String guildId = event.getGuild().getId();
         String creatorId = event.getUser().getId();
 
-        MessageEmbed embed = handleCreatePlaylist(serverId, creatorId, playlistName);
+        MessageEmbed embed = handleCreatePlaylist(guildId, creatorId, playlistName);
         event.replyEmbeds(embed).queue();
     }
 
@@ -55,16 +55,16 @@ public class PlayListCreateCommand implements Command {
         }
 
         String playlistName = String.join(" ", args);
-        String serverId = event.getGuild().getId();
+        String guildId = event.getGuild().getId();
         String creatorId = event.getAuthor().getId();
 
-        MessageEmbed embed = handleCreatePlaylist(serverId, creatorId, playlistName);
+        MessageEmbed embed = handleCreatePlaylist(guildId, creatorId, playlistName);
         event.getChannel().sendMessageEmbeds(embed).queue();
     }
 
-    private MessageEmbed handleCreatePlaylist(String serverId, String creatorId, String playlistName) {
+    private MessageEmbed handleCreatePlaylist(String guildId, String creatorId, String playlistName) {
         try {
-            playListService.createPlayList(playlistName, serverId, creatorId);
+            playListService.createPlayList(playlistName, guildId, creatorId);
 
             return EmbedHelper.buildSuccessEmbed(
                     TITLE_PLAYLIST_CREATED,

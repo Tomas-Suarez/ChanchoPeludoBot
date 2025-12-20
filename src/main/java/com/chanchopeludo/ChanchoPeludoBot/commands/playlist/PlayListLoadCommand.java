@@ -7,6 +7,7 @@ import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.PlayListConstants.PLAYLIST_USAGE_LOAD;
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildErrorEmbed;
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
@@ -42,70 +44,95 @@ public class PlayListLoadCommand implements Command {
 
     @Override
     public void executeSlash(SlashCommandInteractionEvent event) {
-        handleLoadCommand(event, event.getOption("nombre").getAsString(), event.getMember(), event.getGuild().getId());
-    }
-
-    @Override
-    public void executeText(MessageReceivedEvent event, List<String> args) {
-        if (args.isEmpty()) {
-            sendMessage(event, buildErrorEmbed("Error", "Debes decirme el nombre de la playlist."), null, false);
-            return;
-        }
-        handleLoadCommand(event, String.join(" ", args), event.getMember(), event.getGuild().getId());
-    }
-
-    private void handleLoadCommand(Object event, String playlistName, Member member, String guildId) {
+        Member member = event.getMember();
         if (member == null || member.getVoiceState() == null || !member.getVoiceState().inAudioChannel()) {
-            sendMessage(event, buildErrorEmbed("Error", MSG_NOT_IN_VOICE_CHANNEL), null, true);
+            event.replyEmbeds(buildErrorEmbed("Error", MSG_NOT_IN_VOICE_CHANNEL)).setEphemeral(true).queue();
             return;
         }
+
+        String playlistName = event.getOption("nombre").getAsString();
+        String guildId = event.getGuild().getId();
 
         try {
             List<PlayListEntity> candidates = playListService.searchPlaylists(playlistName, guildId);
 
             if (candidates.isEmpty()) {
-                sendMessage(event, buildErrorEmbed("No encontrada", "No encontré ninguna playlist llamada '**" + playlistName), null, true);
+                event.replyEmbeds(buildErrorEmbed("No encontrada", "No encontré ninguna playlist llamada '**" + playlistName + "**'.")).setEphemeral(true).queue();
                 return;
             }
 
             if (candidates.size() == 1) {
-                loadAndPlayById(event, candidates.get(0).getId(), member);
+                PlayListEntity pl = candidates.get(0);
+                MessageEmbed embed = loadAndPlay(pl, member, event.getChannel());
+                event.replyEmbeds(embed).queue();
+            } else {
+                StringSelectMenu menu = buildSelectMenu(candidates);
+                event.reply("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres?")
+                        .addActionRow(menu)
+                        .setEphemeral(true)
+                        .queue();
+            }
+
+        } catch (Exception e) {
+            event.replyEmbeds(buildErrorEmbed("Error", e.getMessage())).setEphemeral(true).queue();
+        }
+    }
+
+    @Override
+    public void executeText(MessageReceivedEvent event, List<String> args) {
+        if (args.isEmpty()) {
+            event.getChannel().sendMessageEmbeds(buildErrorEmbed("Error", PLAYLIST_USAGE_LOAD)).queue();
+            return;
+        }
+
+        Member member = event.getMember();
+        if (member == null || member.getVoiceState() == null || !member.getVoiceState().inAudioChannel()) {
+            event.getChannel().sendMessageEmbeds(buildErrorEmbed("Error", MSG_NOT_IN_VOICE_CHANNEL)).queue();
+            return;
+        }
+
+        String playlistName = String.join(" ", args);
+        String guildId = event.getGuild().getId();
+
+        try {
+            List<PlayListEntity> candidates = playListService.searchPlaylists(playlistName, guildId);
+
+            if (candidates.isEmpty()) {
+                event.getChannel().sendMessageEmbeds(buildErrorEmbed("No encontrada", "No encontré ninguna playlist llamada '**" + playlistName + "**'.")).queue();
                 return;
             }
 
-            StringSelectMenu menu = buildSelectMenu(candidates);
-            String msg = "🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres?";
-            sendMessage(event, null, menu, msg, true);
+            if (candidates.size() == 1) {
+                PlayListEntity pl = candidates.get(0);
+                MessageEmbed embed = loadAndPlay(pl, member, event.getChannel());
+                event.getChannel().sendMessageEmbeds(embed).queue();
+            } else {
+                StringSelectMenu menu = buildSelectMenu(candidates);
+                event.getChannel().sendMessage("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres?")
+                        .setActionRow(menu)
+                        .queue();
+            }
 
         } catch (Exception e) {
-            sendMessage(event, buildErrorEmbed("Error", e.getMessage()), null, true);
+            event.getChannel().sendMessageEmbeds(buildErrorEmbed("Error", e.getMessage())).queue();
         }
     }
 
-    public void loadAndPlayById(Object event, Long playlistId, Member member) {
-        try {
-            PlayListEntity playlist = playListService.loadPlayListById(playlistId, member.getId());
-            playMusic(playlist, member, event);
-
-            String msg = "Cargando **" + playlist.getItems().size() + "** canciones de la playlist **" + playlist.getName() + "**.";
-
-            sendMessage(event, buildSuccessEmbed("Playlist Cargada", msg), null, false);
-
-        } catch (Exception e) {
-            sendMessage(event, buildErrorEmbed("Error al cargar", e.getMessage()), null, true);
+    private MessageEmbed loadAndPlay(PlayListEntity playlist, Member member, MessageChannel channel) {
+        if (playlist.getItems().isEmpty()) {
+            return buildErrorEmbed("Playlist Vacía", "La playlist **" + playlist.getName() + "** no tiene canciones.");
         }
-    }
 
-    private void playMusic(PlayListEntity playlist, Member member, Object event) {
         long voiceChannelId = member.getVoiceState().getChannel().getIdLong();
         long guildId = member.getGuild().getIdLong();
-        long textChannelId = (event instanceof SlashCommandInteractionEvent slashEvent)
-                ? slashEvent.getChannel().getIdLong()
-                : ((MessageReceivedEvent) event).getChannel().getIdLong();
+        long textChannelId = channel.getIdLong();
 
         for (PlayListItemEntity item : playlist.getItems()) {
             musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, item.getTrack_Identifier());
         }
+
+        String msg = "Cargando **" + playlist.getItems().size() + "** canciones de la playlist **" + playlist.getName() + "**.";
+        return buildSuccessEmbed("Playlist Cargada", msg);
     }
 
     private StringSelectMenu buildSelectMenu(List<PlayListEntity> candidates) {
@@ -121,24 +148,6 @@ public class PlayListLoadCommand implements Command {
                 });
 
         return menuBuilder.build();
-    }
-
-    private void sendMessage(Object event, MessageEmbed embed, StringSelectMenu menu, boolean ephemeral) {
-        sendMessage(event, embed, menu, null, ephemeral);
-    }
-
-    private void sendMessage(Object event, MessageEmbed embed, StringSelectMenu menu, String textContent, boolean ephemeral) {
-        if (event instanceof SlashCommandInteractionEvent slashEvent) {
-            var reply = (textContent != null) ? slashEvent.reply(textContent) : slashEvent.replyEmbeds(embed);
-            if (menu != null) reply.addActionRow(menu);
-            reply.setEphemeral(ephemeral).queue();
-
-        } else if (event instanceof MessageReceivedEvent msgEvent) {
-            var channel = msgEvent.getChannel();
-            var action = (textContent != null) ? channel.sendMessage(textContent) : channel.sendMessageEmbeds(embed);
-            if (menu != null) action.setActionRow(menu);
-            action.queue();
-        }
     }
 
     @Override

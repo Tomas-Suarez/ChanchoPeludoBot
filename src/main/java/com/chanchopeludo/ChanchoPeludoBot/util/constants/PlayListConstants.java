@@ -21,7 +21,9 @@ public final class PlayListConstants {
     public static final String TITLE_ERROR_PLAYLIST_ADD = "Error al añadir canción";
 
     // Descripciones para embeds
-    public static final String DESC_PLAYLIST_CREATED = "La playlist **%s** ha sido creada con éxito.";
+    public static final String DESC_PLAYLIST_CREATED = "La playlist **%s** ha sido creada.\n" +
+            "Es **privada** por defecto (solo tú puedes usarla).\n" +
+            "Usa `c!pl-add` para agregar canciones.";
     public static final String DESC_PLAYLIST_DELETED = "La playlist **%s** ha sido eliminada con éxito.";
     public static final String DESC_TRACK_ADDED = "Se añadió **%s** a la playlist **%s**.";
 
