@@ -2,7 +2,6 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.utility;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper;
-import com.chanchopeludo.ChanchoPeludoBot.util.helpers.PaginationHelper;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -17,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.HELP_TOTAL_PAGES;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.PaginationHelper.calculateNewPage;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.PaginationHelper.createPaginationButtons;
 
 @Component
 public class HelpCommand implements Command {
@@ -36,7 +37,7 @@ public class HelpCommand implements Command {
                 HELP_TOTAL_PAGES
         );
 
-        List<Button> buttons = PaginationHelper.createPaginationButtons("help", currentPage, HELP_TOTAL_PAGES);
+        List<Button> buttons = createPaginationButtons("help", currentPage, HELP_TOTAL_PAGES);
 
         event.replyEmbeds(helpEmbed)
                 .setComponents(ActionRow.of(buttons))
@@ -53,7 +54,7 @@ public class HelpCommand implements Command {
                 HELP_TOTAL_PAGES
         );
 
-        List<Button> buttons = PaginationHelper.createPaginationButtons("help", currentPage, HELP_TOTAL_PAGES);
+        List<Button> buttons = createPaginationButtons("help", currentPage, HELP_TOTAL_PAGES);
 
         event.getChannel().sendMessageEmbeds(helpEmbed)
                 .setComponents(ActionRow.of(buttons))
@@ -81,7 +82,7 @@ public class HelpCommand implements Command {
         String action = idParts[1];
         int currentPage = Integer.parseInt(idParts[2]);
 
-        int newPage = PaginationHelper.calculateNewPage(action, currentPage, HELP_TOTAL_PAGES);
+        int newPage = calculateNewPage(action, currentPage, HELP_TOTAL_PAGES);
 
         MessageEmbed helpEmbed = EmbedHelper.buildHelpEmbed(
                 event.getJDA().getSelfUser(),
@@ -89,7 +90,7 @@ public class HelpCommand implements Command {
                 HELP_TOTAL_PAGES
         );
 
-        List<Button> buttons = PaginationHelper.createPaginationButtons("help", newPage, HELP_TOTAL_PAGES);
+        List<Button> buttons = createPaginationButtons("help", newPage, HELP_TOTAL_PAGES);
 
         event.editMessageEmbeds(helpEmbed)
                 .setComponents(ActionRow.of(buttons))

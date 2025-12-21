@@ -29,11 +29,11 @@ public class PlayListServiceImp implements PlayListService {
 
     @Override
     @Transactional
-    public void createPlayList(String playlistName, String guildId, String creatorId) {
+    public void createPlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
 
-        UserEntity creator = userRepository.findById(creatorId)
+        UserEntity creator = userRepository.findById(userId)
                 .orElseThrow(()-> new EntityNotFoundException("No se encontró el usuario creador!"));
 
         //TODO: Implementar una excepción personalizada mas adelante

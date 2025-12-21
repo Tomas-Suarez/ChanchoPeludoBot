@@ -20,6 +20,7 @@ import java.util.Optional;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_HELP_FOOTER;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_PROFILE_NOT_FOUND;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.PaginationHelper.getPageFooter;
 
 public class EmbedHelper {
 
@@ -56,7 +57,7 @@ public class EmbedHelper {
         int totalPages = (int) Math.ceil((double) queueList.size() / itemsPerPage);
         if (totalPages == 0) totalPages = 1;
 
-        eb.setFooter(String.format(MSG_QUEUE_FOOTER, page, totalPages, queueList.size()));
+        eb.setFooter(getPageFooter(page, totalPages, queueList.size()));
         eb.setColor(0x1DB954);
 
         return eb.build();
@@ -99,8 +100,8 @@ public class EmbedHelper {
 
         switch (page) {
             case 1:
-                eb.setDescription("** Comandos de música **");
-                eb.addField("🎶 Comandos de Música",
+                eb.setDescription("** 🎵 Comandos de Música **");
+                eb.addField("Comandos disponibles:",
                         "`play (o p)`: Reproduce o añade una canción.\n" +
                                 "`skip`: Salta a la siguiente canción.\n" +
                                 "`stop`: Detiene la música y limpia la cola.\n" +
@@ -110,6 +111,21 @@ public class EmbedHelper {
                                 "`nowplaying (o np)`: Muestra la canción actual.\n" +
                                 "`shuffle`: Mezcla la cola.\n" +
                                 "`volume`: Ajusta el volumen (ej. `c!volume 50`).",
+                        false);
+                break;
+
+            case 2:
+                eb.setDescription("** 📂 Comandos de Playlist **");
+                eb.addField("Gestión de Playlists:",
+                        "`playlist-create <nombre>`: Crea una playlist nueva.\n" +
+                                "`playlist-add <nombre> <url>`: Agrega una canción a tu playlist.\n" +
+                                "`playlist-list [all]`: Muestra tus playlists (o `all` para públicas).\n" +
+                                "`playlist-view <nombre>`: Muestra las canciones de una playlist.\n" +
+                                "`playlist-load <nombre>`: Reproduce una playlist completa.\n" +
+                                "`playlist-delete <nombre>`: Elimina una playlist tuya.\n" +
+                                "`playlist-rename <actual> <nuevo>`: Cambia el nombre de una lista.\n" +
+                                "`playlist-remove <nombre> <pos>`: Borra una canción específica.\n" +
+                                "`playlist-visibility <nombre> <public/private>`: Cambia quién puede verla.",
                         false);
                 break;
         }
@@ -213,7 +229,7 @@ public class EmbedHelper {
             eb.setDescription(sb.toString());
         }
 
-        eb.setFooter(String.format("Página %d de %d (Total: %d canciones)", page, totalPages, items.size()));
+        eb.setFooter(getPageFooter(page, totalPages, items.size()));
 
         return eb.build();
     }
@@ -247,7 +263,7 @@ public class EmbedHelper {
 
         eb.setDescription(description.toString());
 
-        eb.setFooter(String.format("Página %d de %d (Total: %d playlist)", page, totalPages, totalItems));
+        eb.setFooter(getPageFooter(page, totalPages, totalItems));
 
         return eb.build();
     }

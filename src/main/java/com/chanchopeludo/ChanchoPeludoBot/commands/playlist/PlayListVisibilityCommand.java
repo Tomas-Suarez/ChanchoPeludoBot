@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -29,20 +30,26 @@ public class PlayListVisibilityCommand implements Command {
 
     @Override
     public CommandData getSlashCommandData() {
-        return Commands.slash("playlist-public", "Cambia la visibilidad de una playlist (Pública/Privada).")
+        OptionData modeOption = new OptionData(OptionType.STRING, "modo", "Selecciona la visibilidad", true)
+                .addChoice("Public", "public")
+                .addChoice("Private", "private");
+
+        return Commands.slash("playlist-visibility", "Cambia la visibilidad de una playlist.")
                 .addOption(OptionType.STRING, "nombre", "Nombre de la playlist.", true)
-                .addOption(OptionType.BOOLEAN, "es_publica", "True para pública, False para privada.", true);
+                .addOptions(modeOption);
     }
 
     @Override
     public void executeSlash(SlashCommandInteractionEvent event) {
         String playlistName = event.getOption("nombre").getAsString();
-        boolean isPublic = event.getOption("es_publica").getAsBoolean();
+        String mode = event.getOption("modo").getAsString();
+
+        boolean isPublic = mode.equalsIgnoreCase("public");
+
         String guildId = event.getGuild().getId();
         String userId = event.getUser().getId();
 
-        try{
-
+        try {
             playListService.updateVisibility(playlistName, isPublic, guildId, userId);
 
             String estado = isPublic ? "Pública" : "Privada";
@@ -50,7 +57,7 @@ public class PlayListVisibilityCommand implements Command {
 
             event.replyEmbeds(buildSuccessEmbed(TITLE_PLAYLIST_VISIBILITY, msg)).queue();
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             event.replyEmbeds(buildErrorEmbed("Error", e.getMessage())).setEphemeral(true).queue();
         }
     }
@@ -58,6 +65,7 @@ public class PlayListVisibilityCommand implements Command {
     @Override
     public void executeText(MessageReceivedEvent event, List<String> args) {
         if (args.size() < 2) {
+
             event.getChannel().sendMessageEmbeds(
                     buildErrorEmbed(TITLE_ERROR_MISSING_ARGS, PLAYLIST_USAGE_VISIBILITY)
             ).queue();
@@ -67,13 +75,13 @@ public class PlayListVisibilityCommand implements Command {
         String lastArg = args.get(args.size() - 1).toLowerCase();
         boolean isPublic;
 
-        if (lastArg.equals("true") || lastArg.equals("public")) {
+        if (lastArg.equals("public")) {
             isPublic = true;
-        } else if (lastArg.equals("false") || lastArg.equals("private")) {
+        } else if (lastArg.equals("private")) {
             isPublic = false;
         } else {
             event.getChannel().sendMessageEmbeds(
-                    buildErrorEmbed(TITLE_INVALID_ARGS, "El último valor debe ser `true` (públic) o `false` (private).")
+                    buildErrorEmbed(TITLE_INVALID_ARGS, "El último valor debe ser `public` o `private`.")
             ).queue();
             return;
         }
@@ -98,11 +106,11 @@ public class PlayListVisibilityCommand implements Command {
 
     @Override
     public String getName() {
-        return "playlist-public";
+        return "playlist-visibility";
     }
 
     @Override
     public List<String> getTextNames() {
-        return Arrays.asList("playlist-public", "pl-public");
+        return Arrays.asList("playlist-visibility", "pl-visibility");
     }
 }

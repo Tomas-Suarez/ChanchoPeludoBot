@@ -11,7 +11,7 @@ public final class PlayListConstants {
     public static final String PLAYLIST_USAGE_DELETE = "Uso correcto: `c!playlist delete <Nombre-Playlist>`";
     public static final String PLAYLIST_USAGE_VIEW = "Uso correcto: `c!playlist view <Nombre-Playlist>`";
     public static final String PLAYLIST_USAGE_RENAME = "Uso: `c!playlist rename <Nombre Actual> <Nombre Nuevo>`";
-    public static final String PLAYLIST_USAGE_VISIBILITY = "Uso: `c!playlist public <Nombre> <true/false>`";
+    public static final String PLAYLIST_USAGE_VISIBILITY = "Uso: `c!playlist visibility <Nombre> <public/private>`";
     public static final String PLAYLIST_USAGE_REMOVE = "Uso: `c!playlist remove <PlayList> <Posición canción>`";
 
     //Títulos para embeds
