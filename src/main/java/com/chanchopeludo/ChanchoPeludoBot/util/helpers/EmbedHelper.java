@@ -217,4 +217,39 @@ public class EmbedHelper {
 
         return eb.build();
     }
+
+    public static MessageEmbed buildPlayListListEmbed(List<PlayListEntity> playlists, int page, int itemsPerPage, String scope) {
+        EmbedBuilder eb = new EmbedBuilder();
+
+        String title = "all".equals(scope) ? "🌍 Playlists Públicas" : "📂 Mis Playlists";
+        eb.setTitle(title);
+        eb.setColor(Color.CYAN);
+
+        int totalItems = playlists.size();
+        int totalPages = PaginationHelper.calculateTotalPages(totalItems, itemsPerPage);
+
+        int start = (page - 1) * itemsPerPage;
+        int end = Math.min(start + itemsPerPage, totalItems);
+
+        StringBuilder description = new StringBuilder();
+
+        for (int i = start; i < end; i++) {
+            PlayListEntity pl = playlists.get(i);
+
+            String visibility = pl.is_public() ? "🌎" : "🔒";
+
+            description.append(String.format("**%d.** %s `(%d canciones)` %s\n",
+                    (i + 1),
+                    pl.getName(),
+                    pl.getItems().size(),
+                    visibility));
+        }
+
+        eb.setDescription(description.toString());
+
+        eb.setFooter(String.format("Página %d de %d (Total: %d playlist)", page, totalPages, totalItems));
+
+        return eb.build();
+    }
+
 }

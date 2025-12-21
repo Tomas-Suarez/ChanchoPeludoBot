@@ -1,7 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service;
 
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
-import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 
 import java.util.List;
 
@@ -15,8 +14,6 @@ public interface PlayListService {
 
     String removeTrack(String playlistName, int trackPosition, String guildId, String userId);
 
-    List<PlayListItemEntity> listPlayLists();
-
     List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId);
 
     PlayListEntity loadPlayListById(Long playlistId, String requesterId);
@@ -24,4 +21,8 @@ public interface PlayListService {
     void renamePlayList(String oldPlayListName, String newPlayListName, String guildId, String userId);
 
     void updateVisibility(String playListName, boolean isPublic, String guidId, String userId);
+
+    List<PlayListEntity> getPublicPlayLists(String guildId);
+
+    List<PlayListEntity> getUserPlayLists(String userId, String guildId);
 }

@@ -37,4 +37,11 @@ public interface PlayListRepository extends JpaRepository<PlayListEntity, Long> 
     Optional<PlayListEntity> findByNameAndServer_IdServerAndCreator_IdUser(String name, String guildId, String userId);
 
     boolean existsByNameAndServer_IdServerAndCreator_IdUser(String name, String guildId, String userId);
+
+    @Query("SELECT p FROM PlayListEntity p WHERE p.server.idServer = :guildId AND p.is_public = true")
+    List<PlayListEntity> findPublicByServer(@Param("guildId") String guildId);
+
+    @Query("SELECT p FROM PlayListEntity p WHERE p.creator.idUser = :userId AND p.server.idServer = :guildId")
+    List<PlayListEntity> findByCreatorAndServer(@Param("userId") String userId, @Param("guildId") String guildId);
+
 }

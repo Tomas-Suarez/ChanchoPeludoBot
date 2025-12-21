@@ -9,7 +9,7 @@ import com.chanchopeludo.ChanchoPeludoBot.repository.ServerRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.UserRepository;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -109,11 +109,6 @@ public class PlayListServiceImp implements PlayListService {
     }
 
     @Override
-    public List<PlayListItemEntity> listPlayLists() {
-        return List.of();
-    }
-
-    @Override
     @Transactional
     public List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
@@ -185,5 +180,25 @@ public class PlayListServiceImp implements PlayListService {
 
         playList.set_public(isPublic);
         playListRepository.save(playList);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PlayListEntity> getPublicPlayLists(String guildId) {
+        List<PlayListEntity> playlists = playListRepository.findPublicByServer(guildId);
+
+        playlists.forEach(pl -> pl.getItems().size());
+
+        return playlists;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PlayListEntity> getUserPlayLists(String userId, String guildId) {
+        List<PlayListEntity> playlists = playListRepository.findByCreatorAndServer(userId, guildId);
+
+        playlists.forEach(pl -> pl.getItems().size());
+
+        return playlists;
     }
 }
