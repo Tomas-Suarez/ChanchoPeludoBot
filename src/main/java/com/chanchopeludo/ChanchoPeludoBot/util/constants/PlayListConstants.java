@@ -12,12 +12,14 @@ public final class PlayListConstants {
     public static final String PLAYLIST_USAGE_VIEW = "Uso correcto: `c!playlist view <Nombre-Playlist>`";
     public static final String PLAYLIST_USAGE_RENAME = "Uso: `c!playlist rename <Nombre Actual> <Nombre Nuevo>`";
     public static final String PLAYLIST_USAGE_VISIBILITY = "Uso: `c!playlist public <Nombre> <true/false>`";
+    public static final String PLAYLIST_USAGE_REMOVE = "Uso: `c!playlist remove <PlayList> <Posición canción>`";
 
     //Títulos para embeds
     public static final String TITLE_ERROR_PLAYLIST = "Error playlist";
     public static final String TITLE_PLAYLIST_CREATED = "Playlist Creada";
     public static final String TITLE_PLAYLIST_DELETED = "Playlist Eliminada";
     public static final String TITLE_PLAYLIST_RENAMED = "Playlist Renombrada";
+    public static final String TITLE_SONG_REMOVED = "Canción Removida";
     public static final String TITLE_TRACK_ADDED = "Canción añadida";
     public static final String TITLE_PLAYLIST_VISIBILITY = "Visibilidad actualizada";
     public static final String TITLE_ERROR_PLAYLIST_ADD = "Error al añadir canción";
@@ -30,5 +32,6 @@ public final class PlayListConstants {
     public static final String DESC_TRACK_ADDED = "Se añadió **%s** a la playlist **%s**.";
     public static final String DESC_PLAYLIST_RENAMED = "La playlist **%s** fue renombrada a **%s** con exito.";
     public static final String DESC_PLAYLIST_VISIBILITY = "La playlist **%s** ahora es **%s**";
+    public static final String DESC_PLAYLIST_REMOVED = "La canción **%s** fue removida de la playlist **%s** con exito.";
 
 }

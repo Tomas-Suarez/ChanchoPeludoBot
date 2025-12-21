@@ -4,7 +4,6 @@ import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.ServerEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.UserEntity;
-import com.chanchopeludo.ChanchoPeludoBot.repository.PlayListItemRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.PlayListRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.ServerRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.UserRepository;
@@ -90,9 +89,23 @@ public class PlayListServiceImp implements PlayListService {
     }
 
     @Override
-    public void removeTrack(String playlistName, int trackOrder, String guildId) {
+    @Transactional
+    public String removeTrack(String playlistName, int trackPosition, String guildId, String userId) {
 
+        PlayListEntity playlist = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(playlistName, guildId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("No encontré ninguna playlist tuya llamada '" + playlistName + "'."));
 
+        int index = trackPosition - 1;
+
+        if (index < 0 || index >= playlist.getItems().size()) {
+            throw new IllegalArgumentException("La posición " + trackPosition + " no existe. La playlist tiene " + playlist.getItems().size() + " canciones.");
+        }
+
+        PlayListItemEntity removedItem = playlist.getItems().remove(index);
+
+        playListRepository.save(playlist);
+
+        return removedItem.getTitle();
     }
 
     @Override

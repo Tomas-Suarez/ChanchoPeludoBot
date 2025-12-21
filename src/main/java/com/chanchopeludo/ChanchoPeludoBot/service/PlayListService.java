@@ -13,7 +13,7 @@ public interface PlayListService {
 
     void deletePlayList(String playlistName, String guildId, String userId);
 
-    void removeTrack(String playlistName, int trackOrder, String guildId);
+    String removeTrack(String playlistName, int trackPosition, String guildId, String userId);
 
     List<PlayListItemEntity> listPlayLists();
 
