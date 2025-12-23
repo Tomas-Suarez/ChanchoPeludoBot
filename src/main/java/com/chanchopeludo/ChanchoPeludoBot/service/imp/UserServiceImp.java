@@ -1,5 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.model.ServerEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.UserEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.UserServerStatsEntity;
@@ -12,9 +13,8 @@ import com.chanchopeludo.ChanchoPeludoBot.util.helpers.LevelingHelper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.*;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.USER_PROFILE;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.XpConstants.INITIAL_EXP;
 
 @Service
@@ -31,9 +31,11 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public Optional<UserServerStatsEntity> getProfile(String userId, String serverId) {
+    public UserServerStatsEntity getProfile(String userId, String serverId) {
         UserServerStatsId statsId = new UserServerStatsId(userId, serverId);
-        return statsRepository.findById(statsId);
+
+        return statsRepository.findById(statsId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE, userId));
     }
 
     @Override

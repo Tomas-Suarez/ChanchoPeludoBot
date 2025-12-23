@@ -29,6 +29,6 @@ public interface UserService {
      * @param userId   El ID del usuario de Discord
      * @param serverId El ID del servidor de Discord
      */
-    Optional<UserServerStatsEntity> getProfile(String userId, String serverId);
+    UserServerStatsEntity getProfile(String userId, String serverId);
 
 }

@@ -1,6 +1,7 @@
 package com.chanchopeludo.ChanchoPeludoBot.listeners;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.CustomException;
 import com.chanchopeludo.ChanchoPeludoBot.service.CommandManager;
 import com.chanchopeludo.ChanchoPeludoBot.service.UserService;
 import jakarta.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.DEFAULT_PREFIX;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.XpConstants.XP_PER_MESSAGE;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildErrorEmbed;
 
 @Component
 public class DiscordCommandListener extends ListenerAdapter {
@@ -39,7 +41,16 @@ public class DiscordCommandListener extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        commandManager.handleSlash(event);
+        try {
+            commandManager.handleSlash(event);
+        } catch (CustomException e) {
+            event.replyEmbeds(buildErrorEmbed("Aviso", e.getMessage()))
+                    .setEphemeral(true).queue();
+        } catch (Exception e) {
+            event.replyEmbeds(buildErrorEmbed("Error", "Ocurrió un error inesperado."))
+                    .setEphemeral(true).queue();
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -48,38 +59,58 @@ public class DiscordCommandListener extends ListenerAdapter {
             return;
         }
 
-        String userId = event.getAuthor().getId();
-        String username = event.getAuthor().getName();
+        try {
+            String userId = event.getAuthor().getId();
+            String username = event.getAuthor().getName();
+            String serverId = event.getGuild().getId();
+            String serverName = event.getGuild().getName();
 
-        String serverId = event.getGuild().getId();
-        String serverName = event.getGuild().getName();
+            userService.addExp(userId, username, serverId, serverName, XP_PER_MESSAGE);
 
-        userService.addExp(userId, username, serverId, serverName, XP_PER_MESSAGE);
+            commandManager.handle(event);
 
-        commandManager.handle(event);
+        } catch (CustomException e) {
+            event.getChannel().sendMessageEmbeds(buildErrorEmbed("Aviso", e.getMessage())).queue();
+
+        } catch (Exception e) {
+            event.getChannel().sendMessageEmbeds(buildErrorEmbed("Error", "Ocurrió un error inesperado.")).queue();
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
-        String componentId = event.getComponentId();
-
-        for (Command cmd : commands) {
-            if (cmd.handlesButton(componentId)) {
-                cmd.onButtonInteraction(event);
-                return;
+        try {
+            String componentId = event.getComponentId();
+            for (Command cmd : commands) {
+                if (cmd.handlesButton(componentId)) {
+                    cmd.onButtonInteraction(event);
+                    return;
+                }
             }
+        } catch (CustomException e) {
+            event.replyEmbeds(buildErrorEmbed("Aviso", e.getMessage())).setEphemeral(true).queue();
+        } catch (Exception e) {
+            event.replyEmbeds(buildErrorEmbed("Error", "Error al procesar botón.")).setEphemeral(true).queue();
+            e.printStackTrace();
         }
     }
 
     @Override
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
-        String componentId = event.getComponentId();
-
-        for (Command cmd : commands) {
-            if (cmd.handlesMenu(componentId)) {
-                cmd.onMenuInteraction(event);
-                return;
+        try {
+            String componentId = event.getComponentId();
+            for (Command cmd : commands) {
+                if (cmd.handlesMenu(componentId)) {
+                    cmd.onMenuInteraction(event);
+                    return;
+                }
             }
+        } catch (CustomException e) {
+            event.replyEmbeds(buildErrorEmbed("Aviso", e.getMessage())).setEphemeral(true).queue();
+        } catch (Exception e) {
+            event.replyEmbeds(buildErrorEmbed("Error", "Error al procesar menú.")).setEphemeral(true).queue();
+            e.printStackTrace();
         }
     }
 }

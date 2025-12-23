@@ -1,7 +1,12 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
 import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ExternalServiceException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.InvalidInputException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;
+
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.SONG_SPOTIFY;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.SpotifyConstants.*;
 
 import org.slf4j.Logger;
@@ -12,9 +17,7 @@ import se.michaelthelin.spotify.model_objects.specification.*;
 import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,25 +40,25 @@ public class SpotifyServiceImp implements SpotifyService {
     }
 
     @Override
-    public CompletableFuture<Optional<SpotifyTrack>> getTrackFromUrlAsync(String url){
+    public CompletableFuture<SpotifyTrack> getTrackFromUrlAsync(String url) {
         if (url == null || url.isBlank()) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return CompletableFuture.failedFuture(new InvalidInputException("La URL de spotify no puede estar vaciá."));
         }
 
-        return CompletableFuture.supplyAsync(()->{
+        return CompletableFuture.supplyAsync(() -> {
             Matcher matcher = SPOTIFY_URL_PATTERN.matcher(url);
             if (!matcher.find()) {
                 logger.warn("No se pudo encontrar un ID de track de Spotify en la URL: {}", url);
-                throw new IllegalStateException(URL_INVALID_TRACK_ID);
+                throw new InvalidInputException(URL_INVALID_TRACK_ID);
             }
             String trackId = matcher.group(1);
 
-            try{
+            try {
                 logger.info("Buscando información en Spotify para el track ID: {}", trackId);
                 Track track = spotifyApi.getTrack(trackId).build().execute();
 
                 if (track == null) {
-                    return Optional.<SpotifyTrack>empty();
+                    throw new ResourceNotFoundException(SONG_SPOTIFY, trackId);
                 }
 
                 String trackName = track.getName();
@@ -66,36 +69,40 @@ public class SpotifyServiceImp implements SpotifyService {
 
                 logger.info("Track encontrado: '{}' por '{}", trackName, artistName);
 
-                return Optional.of(new SpotifyTrack(trackName, artistName));
+                return new SpotifyTrack(trackName, artistName);
 
-            }catch (Exception e){
-                throw new RuntimeException(e);
+            } catch (ResourceNotFoundException | InvalidInputException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Fallo Spotify", e);
+                throw new ExternalServiceException("Spotify", "No se pudo conectar con la API");
             }
-        }).exceptionally(ex -> {
-            logger.error("Error al procesar la URL de Spotify de forma asíncrona: ", ex);
-            return Optional.empty();
         });
     }
 
     @Override
     public CompletableFuture<List<SpotifyTrack>> getPlaylistFromUrlAsync(String url) {
         if (url == null || url.isBlank()) {
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return CompletableFuture.failedFuture(new InvalidInputException("La URL de la playlist no puede estar vacía."));
         }
 
-        return CompletableFuture.supplyAsync(()->{
+        return CompletableFuture.supplyAsync(() -> {
             Matcher matcher = SPOTIFY_PLAYLIST_PATTERN.matcher(url);
-            if(!matcher.find()){
-                throw new IllegalArgumentException(URL_INVALID_TRACK_ID);
+            if (!matcher.find()) {
+                throw new InvalidInputException(URL_INVALID_TRACK_ID);
             }
 
             String playlistId = matcher.group(1);
 
-            try{
+            try {
                 GetPlaylistsItemsRequest getPlaylistsItemsRequest = spotifyApi.getPlaylistsItems(playlistId)
                         .build();
 
                 Paging<PlaylistTrack> playlistTrackPaging = getPlaylistsItemsRequest.execute();
+
+                if (playlistTrackPaging == null || playlistTrackPaging.getItems() == null) {
+                    throw new ResourceNotFoundException("Playlist de Spotify", playlistId);
+                }
 
                 return Arrays.stream(playlistTrackPaging.getItems())
                         .map(playlistTrack -> (Track) playlistTrack.getTrack())
@@ -108,12 +115,12 @@ public class SpotifyServiceImp implements SpotifyService {
                         })
                         .collect(Collectors.toList());
 
-            }catch (Exception e){
-                throw new RuntimeException(e);
+            } catch (ResourceNotFoundException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Fallo Spotify Playlist", e);
+                throw new ExternalServiceException("Spotify", "No se pudo obtener la playlist.");
             }
-        }).exceptionally(ex->{
-            logger.error("Error al procesar la URL de Spotify de forma asíncrona", ex);
-            return Collections.emptyList();
         });
     }
 }

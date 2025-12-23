@@ -1,11 +1,12 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
 import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ExternalServiceException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.VideoInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import se.michaelthelin.spotify.exceptions.detailed.NotFoundException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,14 +38,18 @@ public class VideoInfoServiceImp implements VideoInfoService {
                     process.waitFor();
 
                     if (title == null || directUrl == null) {
-                        throw new NotFoundException("yt-dlp no devolvió título o URL para: " + youtubeUrl);
+                        throw new ResourceNotFoundException("Video", youtubeUrl);
                     }
 
                     return new VideoInfo(title, directUrl);
                 }
-            } catch (IOException | InterruptedException | NotFoundException e) {
+            } catch (IOException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                logger.error("Error ejecutando yt-dlp para la URL: {}", youtubeUrl, e);
 
-                throw new RuntimeException("Error al ejecutar yt-dlp", e);
+                throw new ExternalServiceException("YouTube", "No se pudo procesar el audio del video.");
             }
         });
     }

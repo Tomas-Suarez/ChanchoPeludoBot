@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildPerfilEmbed;
 
@@ -37,9 +36,9 @@ public class PerfilCommand implements Command {
         User user = event.getUser();
         Guild guild = event.getGuild();
 
-        Optional<UserServerStatsEntity> optionalProfile = userService.getProfile(user.getId(), guild.getId());
+        UserServerStatsEntity profile = userService.getProfile(user.getId(), guild.getId());
 
-        MessageEmbed embed = buildPerfilEmbed(user, optionalProfile);
+        MessageEmbed embed = buildPerfilEmbed(user, profile);
 
         event.replyEmbeds(embed).queue();
     }
@@ -49,9 +48,9 @@ public class PerfilCommand implements Command {
         User user = event.getAuthor();
         Guild guild = event.getGuild();
 
-        Optional<UserServerStatsEntity> optionalProfile = userService.getProfile(user.getId(), guild.getId());
+        UserServerStatsEntity profile = userService.getProfile(user.getId(), guild.getId());
 
-        MessageEmbed embed = buildPerfilEmbed(user, optionalProfile);
+        MessageEmbed embed = buildPerfilEmbed(user, profile);
 
         event.getChannel().sendMessageEmbeds(embed).queue();
     }

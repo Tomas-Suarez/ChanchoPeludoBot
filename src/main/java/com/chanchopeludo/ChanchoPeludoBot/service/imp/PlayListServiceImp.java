@@ -1,5 +1,9 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.DuplicateResourceException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ForbiddenException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.InvalidInputException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.ServerEntity;
@@ -11,8 +15,12 @@ import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.exceptions.detailed.NotFoundException;
 
 import java.util.List;
+
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.GUILD_DISCORD;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.USER_CREATOR;
 
 @Service
 public class PlayListServiceImp implements PlayListService {
@@ -31,14 +39,13 @@ public class PlayListServiceImp implements PlayListService {
     @Transactional
     public void createPlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+                .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
         UserEntity creator = userRepository.findById(userId)
-                .orElseThrow(()-> new EntityNotFoundException("No se encontró el usuario creador!"));
+                .orElseThrow(() -> new ResourceNotFoundException(USER_CREATOR, userId));
 
-        //TODO: Implementar una excepción personalizada mas adelante
         if (playListRepository.existsByNameIgnoreCaseAndServerAndCreator(playlistName, server, creator)) {
-            throw new IllegalArgumentException("Ya tienes una playlist llamada '**" + playlistName + "**'.");
+            throw new DuplicateResourceException("Playlist", playlistName);
         }
 
         PlayListEntity newPlayList = PlayListEntity.builder()
@@ -55,13 +62,13 @@ public class PlayListServiceImp implements PlayListService {
     @Transactional
     public void addTrackToPlayList(String playlistName, String guildId, String userId, String title, String trackIdentifier) {
         ServerEntity server = serverRepository.findById(guildId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+                .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", userId));
 
         PlayListEntity playlist = playListRepository.findByNameAndServerAndCreator(playlistName, server, user)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+                .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", playlistName));
 
         PlayListItemEntity newTrack = PlayListItemEntity.builder()
                 .title(title)
@@ -76,13 +83,13 @@ public class PlayListServiceImp implements PlayListService {
     @Override
     public void deletePlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+                .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", userId));
 
         PlayListEntity playlist = playListRepository.findByNameAndServerAndCreator(playlistName, server, user)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró la playlist '" + playlistName + "'."));
+                .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", playlistName));
 
         playListRepository.delete(playlist);
 
@@ -93,12 +100,16 @@ public class PlayListServiceImp implements PlayListService {
     public String removeTrack(String playlistName, int trackPosition, String guildId, String userId) {
 
         PlayListEntity playlist = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(playlistName, guildId, userId)
-                .orElseThrow(() -> new EntityNotFoundException("No encontré ninguna playlist tuya llamada '" + playlistName + "'."));
+                .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", playlistName));
 
         int index = trackPosition - 1;
 
         if (index < 0 || index >= playlist.getItems().size()) {
-            throw new IllegalArgumentException("La posición " + trackPosition + " no existe. La playlist tiene " + playlist.getItems().size() + " canciones.");
+            throw new InvalidInputException(String.format(
+                    "La posición %d no es válida. La playlist solo tiene %d canciones.",
+                    trackPosition,
+                    playlist.getItems().size()
+            ));
         }
 
         PlayListItemEntity removedItem = playlist.getItems().remove(index);
@@ -112,15 +123,15 @@ public class PlayListServiceImp implements PlayListService {
     @Transactional
     public List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId) {
         ServerEntity server = serverRepository.findById(guildId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el servidor!"));
+                .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontró el usuario!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", userId));
 
         List<PlayListEntity> playlists = playListRepository.searchForLoad(playlistName, server, user);
 
         if (playlists.isEmpty()) {
-            throw new EntityNotFoundException("No encontré ninguna playlist llamada '" + playlistName + "' (ni tuya ni pública).");
+            throw new ResourceNotFoundException("PlayList", "nombre", playlistName);
         }
 
         for (PlayListEntity pl : playlists) {
@@ -135,10 +146,10 @@ public class PlayListServiceImp implements PlayListService {
     @Transactional
     public PlayListEntity loadPlayListById(Long playlistId, String requesterId) {
         PlayListEntity playlist = playListRepository.findById(playlistId)
-                .orElseThrow(() -> new EntityNotFoundException("Playlist no encontrada con ID: " + playlistId));
+                .orElseThrow(() -> new ResourceNotFoundException("PlayList", String.valueOf(playlistId)));
 
         if (!playlist.is_public() && !playlist.getCreator().getIdUser().equals(requesterId)) {
-            throw new RuntimeException("Esta playlist es privada.");
+            throw new ForbiddenException("Esta playlist es privada.");
         }
 
         playlist.getItems().size();
@@ -146,7 +157,7 @@ public class PlayListServiceImp implements PlayListService {
         playlist.getServer().getGuild_name();
 
         if (playlist.getItems().isEmpty()) {
-            throw new RuntimeException("La playlist está vacía.");
+            throw new InvalidInputException(String.format("La playlist '%s' está vacía. Agrega canciones antes de reproducirla.", playlist.getName()));
         }
 
         return playlist;
@@ -160,15 +171,15 @@ public class PlayListServiceImp implements PlayListService {
             return;
         }
 
-        PlayListEntity playList = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(oldPlayListName, guildId, userId)
-                .orElseThrow(()-> new RuntimeException("No se encontro ninguna playlist con el nombre: " + oldPlayListName));
+        PlayListEntity playlist = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(oldPlayListName, guildId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", oldPlayListName));
 
-        if(playListRepository.existsByNameAndServer_IdServerAndCreator_IdUser(newPlayListName, guildId, userId)){
-            throw new RuntimeException("Ya tienes una playlist con el mismo nombre en este servidor!");
+        if (playListRepository.existsByNameAndServer_IdServerAndCreator_IdUser(newPlayListName, guildId, userId)) {
+            throw new DuplicateResourceException("PlayList", newPlayListName);
         }
 
-        playList.setName(newPlayListName);
-        playListRepository.save(playList);
+        playlist.setName(newPlayListName);
+        playListRepository.save(playlist);
 
     }
 
@@ -176,7 +187,7 @@ public class PlayListServiceImp implements PlayListService {
     @Transactional
     public void updateVisibility(String playListName, boolean isPublic, String guildId, String userId) {
         PlayListEntity playList = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(playListName, guildId, userId)
-                .orElseThrow(()-> new RuntimeException("No se encontró tu playlist llamada: " + playListName));
+                .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", playListName));
 
         playList.set_public(isPublic);
         playListRepository.save(playList);
@@ -187,6 +198,10 @@ public class PlayListServiceImp implements PlayListService {
     public List<PlayListEntity> getPublicPlayLists(String guildId) {
         List<PlayListEntity> playlists = playListRepository.findPublicByServer(guildId);
 
+        if (playlists.isEmpty()) {
+            throw new ResourceNotFoundException("Playlists públicas", guildId);
+        }
+
         playlists.forEach(pl -> pl.getItems().size());
 
         return playlists;
@@ -196,6 +211,10 @@ public class PlayListServiceImp implements PlayListService {
     @Transactional(readOnly = true)
     public List<PlayListEntity> getUserPlayLists(String userId, String guildId) {
         List<PlayListEntity> playlists = playListRepository.findByCreatorAndServer(userId, guildId);
+
+        if (playlists.isEmpty()) {
+            throw new ResourceNotFoundException("Tus Playlists", "usuario", userId);
+        }
 
         playlists.forEach(pl -> pl.getItems().size());
 

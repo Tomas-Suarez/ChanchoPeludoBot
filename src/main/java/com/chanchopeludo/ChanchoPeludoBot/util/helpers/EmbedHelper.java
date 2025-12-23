@@ -165,19 +165,12 @@ public class EmbedHelper {
                 .build();
     }
 
-    public static MessageEmbed buildPerfilEmbed(User user, Optional<UserServerStatsEntity> optionalProfile) {
+    public static MessageEmbed buildPerfilEmbed(User user, UserServerStatsEntity profile) {
 
-        if (optionalProfile.isEmpty()) {
-            return buildErrorEmbed("Perfil no encontrado", MSG_PROFILE_NOT_FOUND);
-        }
-
-        UserServerStatsEntity profile = optionalProfile.get();
         EmbedBuilder eb = new EmbedBuilder();
 
         eb.setTitle("Perfil de " + user.getName());
-
         eb.setThumbnail(user.getEffectiveAvatarUrl());
-
         eb.setColor(new Color(0x3498DB));
 
         eb.addField("Nivel", String.valueOf(profile.getLevel()), false);

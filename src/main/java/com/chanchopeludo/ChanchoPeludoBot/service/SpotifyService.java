@@ -14,10 +14,9 @@ public interface SpotifyService {
      * La operación se realiza en un hilo separado para no bloquear la ejecución principal.
      *
      * @param url La URL completa de la canción de Spotify a buscar (ej: "https://open.spotify.com/track/trackId").
-     * @return Un {@code CompletableFuture} que, al completarse, contendrá un {@code Optional} con el {@code SpotifyTrack} si se encontró,
-     * o un {@code Optional} vacío si la URL es inválida o la canción no existe.
+     * @return Un {@code CompletableFuture} que, al completarse, contendrá {@code SpotifyTrack} si se encontró,
      */
-    CompletableFuture<Optional<SpotifyTrack>> getTrackFromUrlAsync(String url);
+    CompletableFuture<SpotifyTrack> getTrackFromUrlAsync(String url);
 
     /**
      * Obtiene de forma asíncrona todas las canciones de una playlist de Spotify a partir de su URL.
