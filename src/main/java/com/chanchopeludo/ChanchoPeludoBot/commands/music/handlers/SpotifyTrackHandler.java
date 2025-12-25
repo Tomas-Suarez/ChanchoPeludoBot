@@ -1,11 +1,12 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.PlayResult;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
@@ -29,26 +30,16 @@ public class SpotifyTrackHandler implements InputHandler {
     }
 
     @Override
-    public void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
+    public CompletableFuture<String> handle(long guildId, long voiceChannelId, long textChannelId, String input) {
         logger.info("Procesando URL de track de Spotify para el servidor '{}': {}", guildId, input);
 
-        spotifyService.getTrackFromUrlAsync(input).thenAccept(trackOptional -> {
-            trackOptional.ifPresentOrElse(
-                    track -> {
-                        String finalInput = track.toYoutubeSearchQuery();
-                        logger.info("Servidor '{}': URL de Spotify buscada: {}", guildId, finalInput);
+        return spotifyService.getTrackFromUrlAsync(input)
+                .thenCompose(track -> {
+                    String youtubeQuery = track.toYoutubeSearchQuery();
+                    logger.info("Servidor '{}': URL de Spotify buscada: {}", guildId, youtubeQuery);
 
-                        musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, finalInput)
-                                .thenAccept(reply);
-                    },
-                    () -> {
-                        reply.accept(new PlayResult(false, MSG_SPOTIFY_FAILURE));
-                    }
-            );
-        }).exceptionally(ex -> {
-            logger.error("Ocurrió una excepción al obtener la cancion para la URL: {}", input, ex);
-            reply.accept(new PlayResult(false, "Error al procesar el track de Spotify."));
-            return null;
-        });
+                    return musicService.loadAndPlay(guildId, voiceChannelId, textChannelId, youtubeQuery);
+
+                });
     }
 }

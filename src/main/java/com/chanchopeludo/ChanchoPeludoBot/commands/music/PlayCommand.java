@@ -2,7 +2,6 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.music;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers.InputHandler;
-import com.chanchopeludo.ChanchoPeludoBot.dto.PlayResult;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

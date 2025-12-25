@@ -1,13 +1,14 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.PlayResult;
 import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import java.util.function.Consumer;
+
+import java.util.concurrent.CompletableFuture;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.ValidationHelper.isSpotifyPlaylist;
@@ -29,40 +30,29 @@ public class SpotifyPlayListHandler implements InputHandler {
     }
 
     @Override
-    public void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
+    public CompletableFuture<String> handle(long guildId, long voiceChannelId, long textChannelId, String input) {
         logger.info("Procesando URL de playlist de Spotify para el servidor '{}': {}", guildId, input);
 
-        spotifyService.getPlaylistFromUrlAsync(input).thenAccept(tracks -> {
-            if (tracks == null || tracks.isEmpty()) {
-                logger.warn("La playlist de Spotify resultó vacía o nula para la URL: {}", input);
-                reply.accept(new PlayResult(false, MSG_SPOTIFY_FAILURE));
-                return;
-            }
+        return spotifyService.getPlaylistFromUrlAsync(input)
+                .thenCompose(tracks -> {
+                    if (tracks == null || tracks.isEmpty()) {
+                        logger.warn("La playlist de Spotify resultó vacía o nula para la URL: {}", input);
+                        throw new ResourceNotFoundException("La playlist de Spotify está vacía.");
+                    }
 
-            logger.info("Servidor '{}': Playlist de Spotify con {} canciones recibidas.", guildId, tracks.size());
-            SpotifyTrack firstTrack = tracks.get(0);
-            String firstTrackQuery = firstTrack.toYoutubeSearchQuery();
+                    logger.info("Servidor '{}': Playlist de Spotify con {} canciones recibidas.", guildId, tracks.size());
+                    SpotifyTrack firstTrack = tracks.get(0);
+                    String firstTrackQuery = firstTrack.toYoutubeSearchQuery();
 
-            musicService.playTrackSilently(guildId, voiceChannelId, textChannelId, firstTrackQuery)
-                    .thenAccept(playResult -> {
+                    return musicService.playTrackSilently(guildId, voiceChannelId, textChannelId, firstTrackQuery)
+                            .thenApply(unused -> {
+                                for (int i = 1; i < tracks.size(); i++) {
+                                    SpotifyTrack track = tracks.get(i);
+                                    musicService.queueTrack(guildId, textChannelId, track.toYoutubeSearchQuery());
+                                }
 
-                        if (!playResult.success()) {
-                            logger.warn("Falló la reproducción silenciosa de la primera canción de la playlist.");
-                        }
-
-                        for (int i = 1; i < tracks.size(); i++) {
-                            SpotifyTrack track = tracks.get(i);
-                            String trackQuery = track.toYoutubeSearchQuery();
-                            musicService.queueTrack(guildId, textChannelId, trackQuery);
-                        }
-
-                        reply.accept(new PlayResult(true, String.format(MSG_PLAYLIST_ADDED_COUNT, tracks.size())));
-                    });
-
-        }).exceptionally(ex -> {
-            logger.error("Ocurrió una excepción al obtener la playlist de Spotify para la URL: {}", input, ex);
-            reply.accept(new PlayResult(false, "Error al procesar la playlist de Spotify."));
-            return null;
-        });
+                                return String.format(MSG_PLAYLIST_ADDED_COUNT, tracks.size());
+                            });
+                });
     }
 }

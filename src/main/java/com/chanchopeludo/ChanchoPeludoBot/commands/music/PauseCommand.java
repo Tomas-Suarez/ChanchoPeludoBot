@@ -1,7 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.music;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
-import com.chanchopeludo.ChanchoPeludoBot.dto.PlayResult;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -13,6 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_PAUSE_MUSIC;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildErrorEmbed;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
 @Component
 public class PauseCommand implements Command {
@@ -30,25 +32,32 @@ public class PauseCommand implements Command {
     @Override
     public void executeSlash(SlashCommandInteractionEvent event) {
         if (event.getMember().getVoiceState().getChannel() == null) {
-            event.reply(MSG_NOT_IN_VOICE_CHANNEL).setEphemeral(true).queue();
+            event.replyEmbeds(buildErrorEmbed("Error", MSG_NOT_IN_VOICE_CHANNEL))
+                    .setEphemeral(true)
+                    .queue();
             return;
         }
 
-        PlayResult result = musicService.pause(event.getGuild().getIdLong());
+        musicService.pause(event.getGuild().getIdLong());
 
-        event.reply(result.message()).setEphemeral(!result.success()).queue();
+        event.replyEmbeds(buildSuccessEmbed("Pausado", MSG_PAUSE_MUSIC))
+                .queue();
     }
 
     @Override
     public void executeText(MessageReceivedEvent event, List<String> args) {
         if (event.getMember().getVoiceState().getChannel() == null) {
-            event.getChannel().sendMessage(MSG_NOT_IN_VOICE_CHANNEL).queue();
+            event.getChannel()
+                    .sendMessageEmbeds(buildErrorEmbed("Error", MSG_NOT_IN_VOICE_CHANNEL))
+                    .queue();
             return;
         }
 
-        PlayResult result = musicService.pause(event.getGuild().getIdLong());
+        musicService.pause(event.getGuild().getIdLong());
 
-        event.getChannel().sendMessage(result.message()).queue();
+        event.getChannel()
+                .sendMessageEmbeds(buildSuccessEmbed("Pausado", MSG_PAUSE_MUSIC))
+                .queue();
     }
 
     @Override

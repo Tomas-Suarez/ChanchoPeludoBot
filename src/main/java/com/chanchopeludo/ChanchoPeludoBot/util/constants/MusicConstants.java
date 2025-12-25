@@ -33,7 +33,7 @@ public final class MusicConstants {
     public static final String MSG_SKIP_FAIL = "❌ No hay más canciones en la cola para saltar.";
     public static final String MSG_ALREADY_PAUSED = "⚠️ El reproductor ya está en pausa.";
     public static final String MSG_NOT_PAUSED = "⚠️ El reproductor no está en pausa.";
-    public static final String MSG_INVALID_VALUE_VOLUME = "❌ Uso correcto: `c!volume <1-100>`";
+    public static final String MSG_INVALID_VALUE_VOLUME = "❌ Uso correcto: `c!volume <1-120>`";
     public static final String MSG_SHUFFLE_FAILED = "❌ La cola de reproducciones está vacía, no hay nada que mezclar.";
 
     // Mensajes para el Comando de Cola (Queue)

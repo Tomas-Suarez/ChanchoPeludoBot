@@ -1,12 +1,10 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.PlayResult;
-
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 
 public interface InputHandler {
 
     boolean canHandle(String input);
 
-    void handle(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply);
+    CompletableFuture<String> handle(long guildId, long voiceChannelId, long textChannelId, String input);
 }
