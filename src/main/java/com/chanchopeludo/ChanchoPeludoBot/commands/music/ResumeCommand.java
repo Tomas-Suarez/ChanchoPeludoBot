@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_RESUME_MUSIC;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
 @Component
 public class ResumeCommand implements Command {
@@ -33,9 +35,9 @@ public class ResumeCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.resume(event.getGuild().getIdLong());
+        musicService.resume(event.getGuild().getIdLong());
 
-        event.reply(result.message()).setEphemeral(!result.success()).queue();
+        event.replyEmbeds(buildSuccessEmbed("Reanudado", MSG_RESUME_MUSIC)).queue();
     }
 
     @Override
@@ -45,9 +47,9 @@ public class ResumeCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.resume(event.getGuild().getIdLong());
+        musicService.resume(event.getGuild().getIdLong());
 
-        event.getChannel().sendMessage(result.message()).queue();
+        event.getChannel().sendMessageEmbeds(buildSuccessEmbed("Reanudado", MSG_RESUME_MUSIC)).queue();
     }
 
     @Override

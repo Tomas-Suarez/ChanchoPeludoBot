@@ -13,7 +13,7 @@ public interface MusicService {
      * @param guildId        ID del servidor (Guild).
      * @param voiceChannelId ID del canal de voz al que conectarse.
      * @param trackUrl       La URL de la canción a reproducir.
-     * @return Un CompletableFuture que nos retorna un PlayResult con el estado y mensaje
+     * @return Un CompletableFuture con el mensaje de éxito.
      */
     CompletableFuture<String> loadAndPlay(long guildId, long voiceChannelId, long textChannelId, String trackUrl);
 
@@ -21,7 +21,7 @@ public interface MusicService {
      * Saltea la canción que se encuentra reproduciendo y comienza la siguiente en la cola.
      *
      * @param guildId ID del servidor (Guild).
-     * @return Un PlayResult con el estado y mensaje
+     * @return El título de la canción salteada.
      */
     String skipTrack(long guildId);
 
@@ -29,7 +29,6 @@ public interface MusicService {
      * Detiene la reproducción de la música por completo, limpia la cola de canciones y desconecta al bot del canal de voz
      *
      * @param guildId ID del servidor (Guild).
-     * @return Un PlayResult con el estado y mensaje
      */
     void stop(long guildId);
 
@@ -37,7 +36,6 @@ public interface MusicService {
      * Pausa la reproducción de la cancion actual.
      *
      * @param guildId ID del servidor (Guild).
-     * @return Un PlayResult con el estado y mensaje
      */
     void pause(long guildId);
 
@@ -45,7 +43,6 @@ public interface MusicService {
      * Reanuda la reproducción de la canción que estaba en pausa.
      *
      * @param guildId ID del servidor (Guild).
-     * @return Un PlayResult con el estado y mensaje
      */
     void resume(long guildId);
 
@@ -63,7 +60,7 @@ public interface MusicService {
      *
      * @param guildId  ID del servidor (Guild).
      * @param trackUrl La URL de la cancion.
-     * @return Un CompletableFuture que nos retorna un PlayResult con el estado y mensaje
+     * @return Un CompletableFuture<Void> que se completa cuando se añade.
      */
     CompletableFuture<Void> queueTrack(long guildId, long textChannelId, String trackUrl);
 
@@ -74,16 +71,16 @@ public interface MusicService {
      * @param guildId        ID del servidor (Guild).
      * @param voiceChannelId ID del canal de voz al que conectarse.
      * @param trackUrl       La URL de la cancion.
-     * @return Un CompletableFuture que nos retorna un PlayResult con el estado y mensaje
-     */
+     * @return Un CompletableFuture<Void> que se completa cuando se carga.
+     * */
     CompletableFuture<Void> playTrackSilently(long guildId, long voiceChannelId, long textChannelId, String trackUrl);
 
     /**
      * Ajusta el volumen de reproducción del bot de música.
      *
      * @param guildId     ID del servidor (Guild).
-     * @param valueVolume El nuevo nivel de volumen, expresado como un porcentaje (0 a 100).
-     *                    Un valor de 100 representa el volumen máximo, mientras que 0 silencia la reproducción.
+     * @param valueVolume El nuevo nivel de volumen, expresado como un porcentaje (0 a 120).
+     *                    Un valor de 120 representa el volumen máximo, mientras que 0 silencia la reproducción.
      */
     void volume(long guildId, int valueVolume);
 
@@ -91,7 +88,6 @@ public interface MusicService {
      * Mezcla la cola de reproducción actual.
      *
      * @param guildId ID del servidor (Guild).
-     * @return Un PlayResult con el estado y mensaje
      */
     void shuffle(long guildId);
 

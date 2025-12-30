@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
-import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_INVALID_VALUE_VOLUME;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
 @Component
 public class VolumeCommand implements Command {
@@ -27,11 +27,11 @@ public class VolumeCommand implements Command {
 
     @Override
     public CommandData getSlashCommandData() {
-        OptionData volumeOption = new OptionData(OptionType.INTEGER, "nivel", "El nuevo volumen (0-100)", true)
+        OptionData volumeOption = new OptionData(OptionType.INTEGER, "nivel", "El nuevo volumen (0-120)", true)
                 .setMinValue(0)
-                .setMaxValue(100);
+                .setMaxValue(120);
 
-        return Commands.slash(getName(), "Ajusta el volumen de la música (0-100)")
+        return Commands.slash(getName(), "Ajusta el volumen de la música (0-120)")
                 .addOptions(volumeOption);
     }
 
@@ -46,9 +46,10 @@ public class VolumeCommand implements Command {
         int valueVolume = event.getOption("nivel").getAsInt();
         long guildId = event.getGuild().getIdLong();
 
-        PlayResult result = musicService.volume(guildId, valueVolume);
+        musicService.volume(event.getGuild().getIdLong(), valueVolume);
 
-        event.reply(result.message()).setEphemeral(!result.success()).queue();
+        event.replyEmbeds(buildSuccessEmbed("Volumen", String.format(MSG_VOLUME_MUSIC, valueVolume)))
+                .queue();
     }
 
     @Override
@@ -67,9 +68,11 @@ public class VolumeCommand implements Command {
             int valueVolume = Integer.parseInt(args.get(0));
             long guildId = event.getGuild().getIdLong();
 
-            PlayResult result = musicService.volume(guildId, valueVolume);
+            musicService.volume(guildId, valueVolume);
 
-            event.getChannel().sendMessage(result.message()).queue();
+            event.getChannel()
+                    .sendMessageEmbeds(buildSuccessEmbed("Volumen", String.format(MSG_VOLUME_MUSIC, valueVolume)))
+                    .queue();
 
         } catch (NumberFormatException e) {
             event.getChannel().sendMessage(MSG_INVALID_VALUE_VOLUME).queue();

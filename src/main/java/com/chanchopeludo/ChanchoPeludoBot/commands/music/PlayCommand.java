@@ -2,6 +2,7 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.music;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers.InputHandler;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.InvalidInputException;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
@@ -49,10 +51,11 @@ public class PlayCommand implements Command {
 
         event.deferReply().setContent(MSG_SEARCH_MUSIC).queue();
 
-        Consumer<PlayResult> reply = (result) ->
-                event.getHook().sendMessage(result.message()).queue();
-
-        handlePlayLogic(guildId, voiceChannelId, textChannelId, input, reply);
+        handlePlayLogic(guildId, voiceChannelId, textChannelId, input)
+                .thenAccept(message -> event.getChannel().sendMessage(message).queue())
+                .exceptionally(ex -> {
+                    return null;
+                });
     }
 
     @Override
@@ -76,23 +79,19 @@ public class PlayCommand implements Command {
 
         event.getChannel().sendMessage(MSG_SEARCH_MUSIC).queue();
 
-        Consumer<PlayResult> responder = (result) ->
-                event.getChannel().sendMessage(result.message()).queue();
-
-        handlePlayLogic(guildId, voiceChannelId, textChannelId, input, responder);
+        handlePlayLogic(guildId, voiceChannelId, textChannelId, input)
+                .thenAccept(message -> event.getChannel().sendMessage(message).queue())
+                .exceptionally(ex -> {
+                    return null;
+                });
     }
 
-    private void handlePlayLogic(long guildId, long voiceChannelId, long textChannelId, String input, Consumer<PlayResult> reply) {
-
-        for (InputHandler handler : handlers) {
-            if (handler.canHandle(input)) {
-                handler.handle(guildId, voiceChannelId, textChannelId, input, reply);
-
-                return;
-            }
-        }
-
-        reply.accept(new PlayResult(false, "No se pudo procesar la entrada: " + input));
+    private CompletableFuture<String> handlePlayLogic(long guildId, long voiceChannelId, long textChannelId, String input) {
+        return handlers.stream()
+                .filter(handler -> handler.canHandle(input))
+                .findFirst()
+                .map(handler -> handler.handle(guildId, voiceChannelId, textChannelId, input))
+                .orElseThrow(() -> new InvalidInputException("No se pudo procesar la entrada: " + input));
     }
 
     @Override

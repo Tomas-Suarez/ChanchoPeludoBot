@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_SHUFFLE_PLAYLIST;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
 @Component
 public class ShuffleCommand implements Command {
@@ -35,9 +37,9 @@ public class ShuffleCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.shuffle(event.getGuild().getIdLong());
+        musicService.shuffle(event.getGuild().getIdLong());
 
-        event.reply(result.message()).setEphemeral(!result.success()).queue();
+        event.replyEmbeds(buildSuccessEmbed("Mezclado", MSG_SHUFFLE_PLAYLIST)).queue();
     }
 
     @Override
@@ -47,9 +49,9 @@ public class ShuffleCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.shuffle(event.getGuild().getIdLong());
+        musicService.shuffle(event.getGuild().getIdLong());
 
-        event.getChannel().sendMessage(result.message()).queue();
+        event.getChannel().sendMessageEmbeds(buildSuccessEmbed("Mezclado", MSG_SHUFFLE_PLAYLIST)).queue();
     }
 
     @Override

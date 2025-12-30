@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_STOP_MUSIC;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
 @Component
 public class StopCommand implements Command {
@@ -33,9 +35,9 @@ public class StopCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.stop(event.getGuild().getIdLong());
+        musicService.stop(event.getGuild().getIdLong());
 
-        event.reply(result.message()).queue();
+        event.replyEmbeds(buildSuccessEmbed("Detenido", MSG_STOP_MUSIC)).queue();
     }
 
     @Override
@@ -45,9 +47,9 @@ public class StopCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.stop(event.getGuild().getIdLong());
+        musicService.stop(event.getGuild().getIdLong());
 
-        event.getChannel().sendMessage(result.message()).queue();
+        event.getChannel().sendMessageEmbeds(buildSuccessEmbed("Detenido", MSG_STOP_MUSIC)).queue();
     }
 
     @Override

@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_NOT_IN_VOICE_CHANNEL;
+import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.MSG_SKIP_MUSIC;
+import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper.buildSuccessEmbed;
 
 @Component
 public class SkipCommand implements Command {
@@ -35,9 +37,10 @@ public class SkipCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.skipTrack(event.getGuild().getIdLong());
+        String skippedTrack = musicService.skipTrack(event.getGuild().getIdLong());
 
-        event.reply(result.message()).setEphemeral(!result.success()).queue();
+        event.replyEmbeds(buildSuccessEmbed("Canción Saltada", MSG_SKIP_MUSIC + " " + skippedTrack))
+                .queue();
     }
 
     @Override
@@ -48,9 +51,11 @@ public class SkipCommand implements Command {
             return;
         }
 
-        PlayResult result = musicService.skipTrack(event.getGuild().getIdLong());
+        String skippedTrack = musicService.skipTrack(event.getGuild().getIdLong());
 
-        event.getChannel().sendMessage(result.message()).queue();
+        event.getChannel()
+                .sendMessageEmbeds(buildSuccessEmbed("Canción Saltada", MSG_SKIP_MUSIC + " " + skippedTrack))
+                .queue();
     }
 
     @Override

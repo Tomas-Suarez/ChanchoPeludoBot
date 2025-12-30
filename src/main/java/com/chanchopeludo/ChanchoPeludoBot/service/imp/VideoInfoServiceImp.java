@@ -22,7 +22,7 @@ public class VideoInfoServiceImp implements VideoInfoService {
     public CompletableFuture<VideoInfo> getVideoInfo(String youtubeUrl) {
         return CompletableFuture.supplyAsync(() -> {
             ProcessBuilder pb = new ProcessBuilder(
-                    "yt-dlp",
+                    "./yt-dlp_linux",
                     "--no-update",
                     "-4",
                     "--print", "%(title)s\n%(url)s",
@@ -47,7 +47,7 @@ public class VideoInfoServiceImp implements VideoInfoService {
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
-                logger.error("Error ejecutando yt-dlp para la URL: {}", youtubeUrl, e);
+                logger.error("Error ejecutando ./yt-dlp_linux para la URL: {}", youtubeUrl, e);
 
                 throw new ExternalServiceException("YouTube", "No se pudo procesar el audio del video.");
             }

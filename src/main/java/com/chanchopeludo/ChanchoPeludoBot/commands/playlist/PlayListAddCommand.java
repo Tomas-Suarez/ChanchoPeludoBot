@@ -3,6 +3,8 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.playlist;
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
 import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.InvalidInputException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;
 import com.chanchopeludo.ChanchoPeludoBot.service.VideoInfoService;
@@ -89,20 +91,19 @@ public class PlayListAddCommand implements Command {
 
         try {
             if (isSpotifyTrack(trackQuery)) {
-                Optional<SpotifyTrack> optTrack = spotifyService.getTrackFromUrlAsync(trackQuery).join();
-                SpotifyTrack track = optTrack.orElseThrow(
-                        () -> new EntityNotFoundException("No se pudo encontrar la canción en Spotify con esa URL.")
-                );
+                SpotifyTrack track = spotifyService.getTrackFromUrlAsync(trackQuery).join();
+
                 title = track.name();
                 trackIdentifier = track.toYoutubeSearchQuery();
 
             } else if (isSpotifyPlaylist(trackQuery)) {
-                throw new IllegalArgumentException("No puedes añadir una playlist de Spotify entera. Añade las canciones una por una.");
+                throw new InvalidInputException("No puedes añadir una playlist de Spotify entera. Añade las canciones una por una.");
 
             } else if (isYoutubeUrl(trackQuery)) {
                 VideoInfo info = videoInfoService.getVideoInfo(trackQuery).join();
+
                 if (info == null || info.title() == null) {
-                    throw new RuntimeException("No se pudo obtener la información del video de YouTube.");
+                    throw new ResourceNotFoundException("No se pudo obtener la información del video de YouTube.");
                 }
                 title = info.title();
                 trackIdentifier = trackQuery;
