@@ -11,12 +11,14 @@ import com.chanchopeludo.ChanchoPeludoBot.repository.UserServerStatsRepository;
 import com.chanchopeludo.ChanchoPeludoBot.service.UserService;
 import com.chanchopeludo.ChanchoPeludoBot.util.helpers.LevelingHelper;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.AppConstants.*;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.USER_PROFILE;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.XpConstants.INITIAL_EXP;
 
+@Slf4j
 @Service
 public class UserServiceImp implements UserService {
 
@@ -32,6 +34,8 @@ public class UserServiceImp implements UserService {
 
     @Override
     public UserServerStatsEntity getProfile(String userId, String serverId) {
+        log.debug("Buscando perfil - User: {}, Server: {}", userId, serverId);
+
         UserServerStatsId statsId = new UserServerStatsId(userId, serverId);
 
         return statsRepository.findById(statsId)

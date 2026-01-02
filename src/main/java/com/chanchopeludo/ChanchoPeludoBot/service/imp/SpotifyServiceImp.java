@@ -9,8 +9,7 @@ import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.SONG_SPOTIFY;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.SpotifyConstants.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.*;
@@ -24,10 +23,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class SpotifyServiceImp implements SpotifyService {
-
-    private static final Logger logger = LoggerFactory.getLogger(SpotifyServiceImp.class);
 
     private static final Pattern SPOTIFY_URL_PATTERN = Pattern.compile("track/(\\w+)");
     private static final Pattern SPOTIFY_PLAYLIST_PATTERN = Pattern.compile("playlist/(\\w+)");
@@ -48,13 +46,13 @@ public class SpotifyServiceImp implements SpotifyService {
         return CompletableFuture.supplyAsync(() -> {
             Matcher matcher = SPOTIFY_URL_PATTERN.matcher(url);
             if (!matcher.find()) {
-                logger.warn("No se pudo encontrar un ID de track de Spotify en la URL: {}", url);
+                log.warn("No se pudo encontrar un ID de track de Spotify en la URL: {}", url);
                 throw new InvalidInputException(URL_INVALID_TRACK_ID);
             }
             String trackId = matcher.group(1);
 
             try {
-                logger.info("Buscando información en Spotify para el track ID: {}", trackId);
+                log.info("Buscando información en Spotify para el track ID: {}", trackId);
                 Track track = spotifyApi.getTrack(trackId).build().execute();
 
                 if (track == null) {
@@ -67,14 +65,14 @@ public class SpotifyServiceImp implements SpotifyService {
                         .map(ArtistSimplified::getName)
                         .orElse(UNKNOWN_ARTIST);
 
-                logger.info("Track encontrado: '{}' por '{}", trackName, artistName);
+                log.info("Track encontrado: '{}' por '{}", trackName, artistName);
 
                 return new SpotifyTrack(trackName, artistName);
 
             } catch (ResourceNotFoundException | InvalidInputException e) {
                 throw e;
             } catch (Exception e) {
-                logger.error("Fallo Spotify", e);
+                log.error("Fallo Spotify", e);
                 throw new ExternalServiceException("Spotify", "No se pudo conectar con la API");
             }
         });
@@ -118,7 +116,7 @@ public class SpotifyServiceImp implements SpotifyService {
             } catch (ResourceNotFoundException e) {
                 throw e;
             } catch (Exception e) {
-                logger.error("Fallo Spotify Playlist", e);
+                log.error("Fallo Spotify Playlist", e);
                 throw new ExternalServiceException("Spotify", "No se pudo obtener la playlist.");
             }
         });

@@ -2,6 +2,7 @@ package com.chanchopeludo.ChanchoPeludoBot.controller.advice;
 
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +15,13 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final Map<Class<? extends Exception>, HttpStatus> exceptionStatusMap = new HashMap<>();
 
-    public GlobalExceptionHandler(){
+    public GlobalExceptionHandler() {
         exceptionStatusMap.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
         exceptionStatusMap.put(DuplicateResourceException.class, HttpStatus.CONFLICT);
         exceptionStatusMap.put(InvalidInputException.class, HttpStatus.BAD_REQUEST);
@@ -32,15 +34,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         HttpStatus status = exceptionStatusMap.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
 
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
+        if (status.is5xxServerError()) {
+            log.error(
+                    "Internal server error [{}] - {} | Path: {}",
+                    ex.getClass().getSimpleName(),
+                    ex.getMessage(),
+                    request.getRequestURI(),
+                    ex
+            );
+        } else {
+            log.warn(
+                    "CLient error [{}] - {} | Path: {}",
+                    ex.getClass().getSimpleName(),
+                    ex.getMessage(),
+                    request.getRequestURI()
+            );
+        }
 
-        problemDetail.setTitle(status.getReasonPhrase());
-        problemDetail.setType(URI.create("https://api.chanchopeludo.com/errors/" + ex.getClass().getSimpleName()));
-        problemDetail.setInstance(URI.create(request.getRequestURI()));
-        problemDetail.setProperty("timestamp", LocalDateTime.now());
+            ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
 
-        return ResponseEntity.status(status).body(problemDetail);
+            problemDetail.setTitle(status.getReasonPhrase());
+            problemDetail.setType(URI.create("https://api.chanchopeludo.com/errors/" + ex.getClass().getSimpleName()));
+            problemDetail.setInstance(URI.create(request.getRequestURI()));
+            problemDetail.setProperty("timestamp", LocalDateTime.now());
+
+            return ResponseEntity.status(status).body(problemDetail);
+
+        }
 
     }
-
-}

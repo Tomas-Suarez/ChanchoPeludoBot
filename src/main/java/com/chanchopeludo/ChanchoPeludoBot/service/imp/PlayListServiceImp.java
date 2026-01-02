@@ -12,16 +12,16 @@ import com.chanchopeludo.ChanchoPeludoBot.repository.PlayListRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.ServerRepository;
 import com.chanchopeludo.ChanchoPeludoBot.repository.UserRepository;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
-import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
-import se.michaelthelin.spotify.exceptions.detailed.NotFoundException;
 
 import java.util.List;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.GUILD_DISCORD;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.USER_CREATOR;
 
+@Slf4j
 @Service
 public class PlayListServiceImp implements PlayListService {
 
@@ -38,6 +38,8 @@ public class PlayListServiceImp implements PlayListService {
     @Override
     @Transactional
     public void createPlayList(String playlistName, String guildId, String userId) {
+        log.info("User {} intenta crear playlist '{}' en Server {}", userId, playlistName, guildId);
+
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
@@ -56,11 +58,13 @@ public class PlayListServiceImp implements PlayListService {
                 .build();
 
         playListRepository.save(newPlayList);
+        log.info("Playlist '{}' creada exitosamente (ID: {}).", playlistName, newPlayList.getId());
     }
 
     @Override
     @Transactional
     public void addTrackToPlayList(String playlistName, String guildId, String userId, String title, String trackIdentifier) {
+        log.info("Agregando track '{}' a playlist '{}'. User: {}", title, playlistName, userId);
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
@@ -78,10 +82,14 @@ public class PlayListServiceImp implements PlayListService {
 
         playlist.getItems().add(newTrack);
         playListRepository.save(playlist);
+
+        log.debug("Track guardado. Total canciones: {}", playlist.getItems().size());
     }
 
     @Override
     public void deletePlayList(String playlistName, String guildId, String userId) {
+        log.info("Solicitud de eliminar playlist '{}' por User: {}", playlistName, userId);
+
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
@@ -93,11 +101,13 @@ public class PlayListServiceImp implements PlayListService {
 
         playListRepository.delete(playlist);
 
+        log.info("Playlist '{}' eliminada.", playlistName);
     }
 
     @Override
     @Transactional
     public String removeTrack(String playlistName, int trackPosition, String guildId, String userId) {
+        log.info("Removiendo track en posición {} de playlist '{}'", trackPosition, playlistName);
 
         PlayListEntity playlist = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(playlistName, guildId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", playlistName));
@@ -122,6 +132,8 @@ public class PlayListServiceImp implements PlayListService {
     @Override
     @Transactional
     public List<PlayListEntity> viewPlayList(String playlistName, String guildId, String userId) {
+        log.debug("Buscando playlists que coincidan con '{}'", playlistName);
+
         ServerEntity server = serverRepository.findById(guildId)
                 .orElseThrow(() -> new ResourceNotFoundException(GUILD_DISCORD, guildId));
 
@@ -145,6 +157,8 @@ public class PlayListServiceImp implements PlayListService {
     @Override
     @Transactional
     public PlayListEntity loadPlayListById(Long playlistId, String requesterId) {
+        log.debug("Cargando Playlist ID: {}", playlistId);
+
         PlayListEntity playlist = playListRepository.findById(playlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("PlayList", String.valueOf(playlistId)));
 
@@ -171,6 +185,8 @@ public class PlayListServiceImp implements PlayListService {
             return;
         }
 
+        log.info("Renombrando playlist de '{}' a '{}'", oldPlayListName, newPlayListName);
+
         PlayListEntity playlist = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(oldPlayListName, guildId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", oldPlayListName));
 
@@ -186,6 +202,8 @@ public class PlayListServiceImp implements PlayListService {
     @Override
     @Transactional
     public void updateVisibility(String playListName, boolean isPublic, String guildId, String userId) {
+        log.info("Cambiando visibilidad de '{}' a Public: {}", playListName, isPublic);
+
         PlayListEntity playList = playListRepository.findByNameAndServer_IdServerAndCreator_IdUser(playListName, guildId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Playlist", "nombre", playListName));
 

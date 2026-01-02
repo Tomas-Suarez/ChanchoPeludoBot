@@ -4,8 +4,7 @@ import com.chanchopeludo.ChanchoPeludoBot.dto.internal.VideoInfo;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ExternalServiceException;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.VideoInfoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -13,10 +12,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 public class VideoInfoServiceImp implements VideoInfoService {
-
-    private static final Logger logger = LoggerFactory.getLogger(VideoInfoServiceImp.class);
 
     @Override
     public CompletableFuture<VideoInfo> getVideoInfo(String youtubeUrl) {
@@ -47,7 +45,7 @@ public class VideoInfoServiceImp implements VideoInfoService {
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
-                logger.error("Error ejecutando ./yt-dlp_linux para la URL: {}", youtubeUrl, e);
+                log.error("Error ejecutando ./yt-dlp_linux para la URL: {}", youtubeUrl, e);
 
                 throw new ExternalServiceException("YouTube", "No se pudo procesar el audio del video.");
             }

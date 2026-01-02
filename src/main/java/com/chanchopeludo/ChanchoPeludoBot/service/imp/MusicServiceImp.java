@@ -18,11 +18,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
@@ -34,6 +33,7 @@ import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.GUILD_DISCORD;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.ResourceNames.VOICE_CHANNEL;
 
+@Slf4j
 @Service
 public class MusicServiceImp implements MusicService {
 
@@ -41,8 +41,6 @@ public class MusicServiceImp implements MusicService {
     private final VideoInfoService videoInfoService;
     private final JDA jda;
     private final Map<Long, GuildMusicManager> musicManagers;
-    private static final Logger logger = LoggerFactory.getLogger(MusicServiceImp.class);
-
 
     public MusicServiceImp(VideoInfoService videoInfoService, JDA jda) {
         this.musicManagers = new HashMap<>();
@@ -69,6 +67,8 @@ public class MusicServiceImp implements MusicService {
 
     @Override
     public CompletableFuture<String> loadAndPlay(long guildId, long voiceChannelId, long textChannelId, String trackUrl) {
+        log.info("PLAY. Guild: {}, URL: {}", guildId, trackUrl);
+
         CompletableFuture<String> futureResult = new CompletableFuture<>();
 
         Guild guild = jda.getGuildById(guildId);
@@ -89,6 +89,7 @@ public class MusicServiceImp implements MusicService {
                     playerManager.loadItemOrdered(musicManager, info.url(), new AudioLoadResultHandler() {
                         @Override
                         public void trackLoaded(AudioTrack track) {
+                            log.info("Track cargado: {}", info.title());
                             track.setUserData(info);
                             play(guild, musicManager, track, voiceChannel);
                             futureResult.complete(MSG_TRACK_ADDED + info.title() + "**");
@@ -96,12 +97,14 @@ public class MusicServiceImp implements MusicService {
 
                         @Override
                         public void playlistLoaded(AudioPlaylist playlist) {
+                            log.info("Playlist cargada: {} ({} canciones)", playlist.getName(), playlist.getTracks().size());
                             play(guild, musicManager, playlist.getTracks().get(0), voiceChannel);
                             futureResult.complete(MSG_PLAYLIST_ADDED + playlist.getName() + "**");
                         }
 
                         @Override
                         public void noMatches() {
+                            log.warn("No se encontraron coincidencias para: {}", trackUrl);
                             futureResult.completeExceptionally(
                                     new ResourceNotFoundException(MSG_NO_MATCHES_URL)
                             );
@@ -109,6 +112,7 @@ public class MusicServiceImp implements MusicService {
 
                         @Override
                         public void loadFailed(FriendlyException exception) {
+                            log.error("LavaPlayer falló al cargar: {}", exception.getMessage(), exception);
                             futureResult.completeExceptionally(
                                     new ExternalServiceException(MSG_LOAD_FAILED, exception.getMessage())
                             );
@@ -117,7 +121,7 @@ public class MusicServiceImp implements MusicService {
                 })
                 .exceptionally(ex -> {
                     Throwable cause = ex.getCause();
-                    logger.error("Error al buscar video", cause != null ? cause : ex);
+                    log.error("Error al buscar video", cause != null ? cause : ex);
                     futureResult.completeExceptionally(ex);
                     return null;
                 });
@@ -127,6 +131,8 @@ public class MusicServiceImp implements MusicService {
 
     @Override
     public String skipTrack(long guildId) {
+        log.info("SKIP en Guild {}", guildId);
+
         Guild guild = jda.getGuildById(guildId);
 
         if (guild == null) {
@@ -142,11 +148,14 @@ public class MusicServiceImp implements MusicService {
         String skippedTrackTitle = musicManager.getPlayer().getPlayingTrack().getInfo().title;
         musicManager.getScheduler().nextTrack();
 
+        log.info("Canción salteada: {}", skippedTrackTitle);
         return skippedTrackTitle;
     }
 
     @Override
     public void stop(long guildId) {
+        log.info("STOP en Guild {}", guildId);
+
         Guild guild = jda.getGuildById(guildId);
 
         if (guild == null) {
@@ -162,6 +171,8 @@ public class MusicServiceImp implements MusicService {
 
     @Override
     public void pause(long guildId) {
+        log.info("PAUSE en Guild {}", guildId);
+
         Guild guild = jda.getGuildById(guildId);
 
         if (guild == null) {
@@ -178,6 +189,8 @@ public class MusicServiceImp implements MusicService {
 
     @Override
     public void resume(long guildId) {
+        log.info("RESUME en Guild {}", guildId);
+
         Guild guild = jda.getGuildById(guildId);
 
         if (guild == null) {
@@ -195,6 +208,8 @@ public class MusicServiceImp implements MusicService {
 
     @Override
     public void volume(long guildId, int valueVolume) {
+        log.info("Cambiando VOLUMEN a {} en Guild {}", valueVolume, guildId);
+
         Guild guild = jda.getGuildById(guildId);
 
         if (guild == null) {
@@ -211,6 +226,8 @@ public class MusicServiceImp implements MusicService {
 
     @Override
     public void shuffle(long guildId) {
+        log.info("SHUFFLE en Guild {}", guildId);
+
         Guild guild = jda.getGuildById(guildId);
 
         if (guild == null) {
@@ -284,19 +301,19 @@ public class MusicServiceImp implements MusicService {
 
                         @Override
                         public void noMatches() {
-                            logger.warn("queueTrack no encontró coincidencias para: {}", trackUrl);
+                            log.warn("queueTrack no encontró coincidencias para: {}", trackUrl);
                             future.completeExceptionally(new ResourceNotFoundException("No se encontraron coincidencias: " + trackUrl));
 
                         }
 
                         @Override
                         public void loadFailed(FriendlyException e) {
-                            logger.error("Fallo al cargar la canción en queueTrack: {}", info.url(), e);
+                            log.error("Fallo al cargar la canción en queueTrack: {}", info.url(), e);
                             future.completeExceptionally(new ExternalServiceException("AudioPlayer", "Fallo al cargar en segundo plano"));                        }
                     });
                 })
                 .exceptionally(ex -> {
-                    logger.error("Error en queueTrack con yt-dlp para: '{}'", trackUrl, ex);
+                    log.error("Error en queueTrack con yt-dlp para: '{}'", trackUrl, ex);
                     return null;
                 });
 
@@ -343,19 +360,19 @@ public class MusicServiceImp implements MusicService {
 
                         @Override
                         public void noMatches() {
-                            logger.warn("playTrackSilently no encontró coincidencias para: {}", trackUrl);
+                            log.warn("playTrackSilently no encontró coincidencias para: {}", trackUrl);
                             future.completeExceptionally(new ResourceNotFoundException("No se encontraron coincidencias: " + trackUrl));
                         }
 
                         @Override
                         public void loadFailed(FriendlyException exception) {
-                            logger.error("playTrackSilently falló al cargar: {}", trackUrl, exception);
+                            log.error("playTrackSilently falló al cargar: {}", trackUrl, exception);
                             future.completeExceptionally(new ExternalServiceException("AudioPlayer", exception.getMessage()));
                         }
                     });
                 })
                 .exceptionally(ex -> {
-                    logger.error("Error en playTrackSilently con yt-dlp para: '{}'", trackUrl, ex);
+                    log.error("Error en playTrackSilently con yt-dlp para: '{}'", trackUrl, ex);
                     return null;
                 });
 
@@ -364,12 +381,15 @@ public class MusicServiceImp implements MusicService {
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, AudioChannel voiceChannel) {
         if (voiceChannel == null) {
-            logger.warn("El usuario no estaba en un canal de voz al intentar reproducir.");
+            log.warn("Intento de Play sin canal de voz en Guild {}", guild.getId());
             return;
         }
 
-        guild.getAudioManager().openAudioConnection(voiceChannel);
-        guild.getAudioManager().setSelfDeafened(true);
+        if (!guild.getAudioManager().isConnected()) {
+            log.debug("Conectando al canal de voz: {}", voiceChannel.getName());
+            guild.getAudioManager().openAudioConnection(voiceChannel);
+            guild.getAudioManager().setSelfDeafened(true);
+        }
         musicManager.getScheduler().queue(track);
     }
 }
