@@ -1,7 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.QueueState;
 
 import java.util.concurrent.CompletableFuture;
 

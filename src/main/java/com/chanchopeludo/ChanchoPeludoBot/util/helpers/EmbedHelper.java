@@ -1,13 +1,12 @@
 package com.chanchopeludo.ChanchoPeludoBot.util.helpers;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.AudioTrackInfo;
-import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.AudioTrackInfo;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.QueueState;
 
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.UserServerStatsEntity;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.SelfUser;
 import net.dv8tion.jda.api.entities.User;
@@ -15,10 +14,8 @@ import net.dv8tion.jda.api.entities.User;
 import java.awt.*;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_HELP_FOOTER;
-import static com.chanchopeludo.ChanchoPeludoBot.util.constants.CommandConstants.MSG_PROFILE_NOT_FOUND;
 import static com.chanchopeludo.ChanchoPeludoBot.util.constants.MusicConstants.*;
 import static com.chanchopeludo.ChanchoPeludoBot.util.helpers.PaginationHelper.getPageFooter;
 

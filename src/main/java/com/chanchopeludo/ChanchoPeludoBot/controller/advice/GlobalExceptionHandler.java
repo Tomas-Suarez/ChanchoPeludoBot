@@ -1,7 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.controller.advice;
 
-import com.chanchopeludo.ChanchoPeludoBot.exceptions.CustomException;
-import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
+import com.chanchopeludo.ChanchoPeludoBot.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -22,6 +21,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     public GlobalExceptionHandler(){
         exceptionStatusMap.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
+        exceptionStatusMap.put(DuplicateResourceException.class, HttpStatus.CONFLICT);
+        exceptionStatusMap.put(InvalidInputException.class, HttpStatus.BAD_REQUEST);
+        exceptionStatusMap.put(ForbiddenException.class, HttpStatus.FORBIDDEN);
+        exceptionStatusMap.put(ExternalServiceException.class, HttpStatus.BAD_GATEWAY);
     }
 
     @ExceptionHandler(CustomException.class)

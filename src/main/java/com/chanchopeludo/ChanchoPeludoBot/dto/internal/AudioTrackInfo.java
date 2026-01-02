@@ -1,4 +1,4 @@
-package com.chanchopeludo.ChanchoPeludoBot.dto;
+package com.chanchopeludo.ChanchoPeludoBot.dto.internal;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 

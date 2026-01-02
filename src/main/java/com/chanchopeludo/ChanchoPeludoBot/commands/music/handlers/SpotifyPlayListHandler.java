@@ -1,6 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.music.handlers;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.SpotifyTrack;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;

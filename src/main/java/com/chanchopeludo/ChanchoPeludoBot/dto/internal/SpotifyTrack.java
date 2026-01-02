@@ -1,4 +1,4 @@
-package com.chanchopeludo.ChanchoPeludoBot.dto;
+package com.chanchopeludo.ChanchoPeludoBot.dto.internal;
 
 public record SpotifyTrack(String name, String artist) {
     /**

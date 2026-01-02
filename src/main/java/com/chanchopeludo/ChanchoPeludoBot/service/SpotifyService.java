@@ -1,9 +1,8 @@
 package com.chanchopeludo.ChanchoPeludoBot.service;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.SpotifyTrack;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface SpotifyService {

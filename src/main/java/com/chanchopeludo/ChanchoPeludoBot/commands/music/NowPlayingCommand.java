@@ -1,8 +1,8 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.music;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
-import com.chanchopeludo.ChanchoPeludoBot.dto.AudioTrackInfo;
-import com.chanchopeludo.ChanchoPeludoBot.dto.QueueState;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.AudioTrackInfo;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.QueueState;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

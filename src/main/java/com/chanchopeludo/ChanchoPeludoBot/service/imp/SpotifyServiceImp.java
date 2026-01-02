@@ -1,6 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.SpotifyTrack;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ExternalServiceException;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.InvalidInputException;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;

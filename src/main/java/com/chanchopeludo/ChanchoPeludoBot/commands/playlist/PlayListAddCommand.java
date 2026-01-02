@@ -1,14 +1,13 @@
 package com.chanchopeludo.ChanchoPeludoBot.commands.playlist;
 
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
-import com.chanchopeludo.ChanchoPeludoBot.dto.SpotifyTrack;
-import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.SpotifyTrack;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.VideoInfo;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.InvalidInputException;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import com.chanchopeludo.ChanchoPeludoBot.service.SpotifyService;
 import com.chanchopeludo.ChanchoPeludoBot.service.VideoInfoService;
-import jakarta.persistence.EntityNotFoundException;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 

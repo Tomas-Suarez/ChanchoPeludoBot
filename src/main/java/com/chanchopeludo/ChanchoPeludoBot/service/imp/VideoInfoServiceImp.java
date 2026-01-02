@@ -1,6 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service.imp;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.VideoInfo;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ExternalServiceException;
 import com.chanchopeludo.ChanchoPeludoBot.exceptions.ResourceNotFoundException;
 import com.chanchopeludo.ChanchoPeludoBot.service.VideoInfoService;

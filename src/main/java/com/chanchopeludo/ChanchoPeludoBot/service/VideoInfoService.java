@@ -1,6 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.service;
 
-import com.chanchopeludo.ChanchoPeludoBot.dto.VideoInfo;
+import com.chanchopeludo.ChanchoPeludoBot.dto.internal.VideoInfo;
 
 import java.util.concurrent.CompletableFuture;
 
