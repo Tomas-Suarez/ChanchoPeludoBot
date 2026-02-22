@@ -34,6 +34,8 @@ dependencies {
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 test {
