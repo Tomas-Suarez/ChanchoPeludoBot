@@ -11,10 +11,12 @@ import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import dev.arbjerg.lavalink.client.LavalinkClient;
 import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.*;
+import dev.arbjerg.lavalink.client.event.TrackEndEvent;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
+import net.dv8tion.jda.api.managers.AudioManager;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -37,6 +39,16 @@ public class MusicServiceImp implements MusicService {
         this.lavalinkClient = lavalinkClient;
         this.jda = jda;
         this.musicManagers = new HashMap<>();
+
+        this.lavalinkClient.on(TrackEndEvent.class).subscribe(event -> {
+            if (event.getEndReason().getMayStartNext()) {
+                GuildMusicManager musicManager = this.musicManagers.get(event.getGuildId());
+                if (musicManager != null) {
+                    log.info("Canción terminada en Guild {}. Pasando a la siguiente...", event.getGuildId());
+                    musicManager.getScheduler().nextTrack();
+                }
+            }
+        });
     }
 
     private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
@@ -45,7 +57,7 @@ public class MusicServiceImp implements MusicService {
 
         if (musicManager == null) {
             Link link = lavalinkClient.getOrCreateLink(guildId);
-            musicManager = new GuildMusicManager(link);
+            musicManager = new GuildMusicManager(link, jda);
             musicManagers.put(guildId, musicManager);
         }
 
@@ -137,7 +149,7 @@ public class MusicServiceImp implements MusicService {
 
         musicManager.getLink().createOrUpdatePlayer().setTrack(null).subscribe();
 
-        jda.getDirectAudioController().disconnect(guild);
+        guild.getAudioManager().closeAudioConnection();
     }
 
     @Override
@@ -282,7 +294,10 @@ public class MusicServiceImp implements MusicService {
         if (guild.getSelfMember().getVoiceState() == null || !guild.getSelfMember().getVoiceState().inAudioChannel()) {
             log.debug("Conectando al canal de voz: {}", voiceChannel.getName());
 
-            jda.getDirectAudioController().connect(voiceChannel);
+            AudioManager audioManager = guild.getAudioManager();
+            audioManager.openAudioConnection(voiceChannel);
+
+            audioManager.setSelfDeafened(true);
         }
 
         musicManager.getScheduler().queue(track);

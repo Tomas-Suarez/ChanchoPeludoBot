@@ -1,5 +1,6 @@
 package com.chanchopeludo.ChanchoPeludoBot.config;
 
+import com.chanchopeludo.ChanchoPeludoBot.listeners.VoiceActivityListener;
 import dev.arbjerg.lavalink.client.LavalinkClient;
 import dev.arbjerg.lavalink.client.NodeOptions;
 import net.dv8tion.jda.api.JDA;
@@ -47,11 +48,14 @@ public class BotConfiguration {
     }
 
     @Bean
-    public JDA jda(LavalinkClient lavalinkClient) throws InterruptedException {
+    public JDA jda(LavalinkClient lavalinkClient, VoiceActivityListener voiceActivityListener) throws InterruptedException {
         JDA jda = JDABuilder.createDefault(token)
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavalinkClient))
+
+                .addEventListeners(voiceActivityListener)
+
                 .enableIntents(
                         GatewayIntent.GUILD_VOICE_STATES,
                         GatewayIntent.GUILD_MESSAGES,
