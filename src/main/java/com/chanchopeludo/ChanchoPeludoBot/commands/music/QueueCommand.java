@@ -10,8 +10,10 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -57,7 +59,7 @@ public class QueueCommand implements Command {
 
         List<Button> buttons = createPaginationButtons("queue", 1, totalPages);
 
-        event.replyEmbeds(embed).setActionRow(buttons).queue();
+        event.replyEmbeds(embed).setComponents(ActionRow.of(buttons)).queue();
     }
 
     @Override
@@ -76,12 +78,11 @@ public class QueueCommand implements Command {
 
         int totalPages = calculateTotalPages(state.queue().size(), ITEMS_PER_PAGE);
 
-
         MessageEmbed embed = buildQueueEmbed(state, 1, ITEMS_PER_PAGE);
 
         List<Button> buttons = PaginationHelper.createPaginationButtons("queue", 1, totalPages);
 
-        event.getChannel().sendMessageEmbeds(embed).setActionRow(buttons).queue();
+        event.getChannel().sendMessageEmbeds(embed).setComponents(ActionRow.of(buttons)).queue();
     }
 
     @Override

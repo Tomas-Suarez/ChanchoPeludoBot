@@ -5,6 +5,8 @@ import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListItemEntity;
 import com.chanchopeludo.ChanchoPeludoBot.service.MusicService;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -14,7 +16,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -70,7 +71,7 @@ public class PlayListLoadCommand implements Command {
             } else {
                 StringSelectMenu menu = buildSelectMenu(candidates);
                 event.reply("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres cargar?")
-                        .addActionRow(menu)
+                        .setComponents(ActionRow.of(menu))
                         .setEphemeral(true)
                         .queue();
             }
@@ -112,7 +113,7 @@ public class PlayListLoadCommand implements Command {
             } else {
                 StringSelectMenu menu = buildSelectMenu(candidates);
                 event.getChannel().sendMessage("🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres cargar?")
-                        .setActionRow(menu)
+                        .setComponents(ActionRow.of(menu))
                         .queue();
             }
 

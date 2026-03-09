@@ -3,6 +3,8 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.playlist;
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -10,8 +12,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -80,9 +80,10 @@ public class PlayListDeleteCommand implements Command {
         String[] idParts = event.getComponentId().split(":", 3);
         String action = idParts[1];
 
-        event.editComponents(
-                event.getMessage().getActionRows().get(0).withDisabled(true)
-        ).queue();
+        if (!event.getMessage().getComponents().isEmpty()) {
+            ActionRow row = (ActionRow) event.getMessage().getComponents().get(0);
+            event.editComponents(row.withDisabled(true)).queue();
+        }
 
         if ("cancel".equals(action)) {
             MessageEmbed embed = buildSuccessEmbed("Operación Cancelada", "No se borró ninguna playlist.");

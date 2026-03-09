@@ -3,6 +3,8 @@ package com.chanchopeludo.ChanchoPeludoBot.commands.playlist;
 import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -10,8 +12,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class PlayListListsCommand implements Command {
 
         List<Button> buttons = createPaginationButtons("playlist-list", 1, totalPages, scope);
 
-        event.replyEmbeds(embed).setActionRow(buttons).queue();
+        event.replyEmbeds(embed).setComponents(ActionRow.of(buttons)).queue();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class PlayListListsCommand implements Command {
 
         List<Button> buttons = createPaginationButtons("playlist-list", 1, totalPages, scope);
 
-        event.getChannel().sendMessageEmbeds(embed).setActionRow(buttons).queue();
+        event.getChannel().sendMessageEmbeds(embed).setComponents(ActionRow.of(buttons)).queue();
     }
 
     @Override

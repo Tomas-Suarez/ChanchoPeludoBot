@@ -4,6 +4,9 @@ import com.chanchopeludo.ChanchoPeludoBot.commands.Command;
 import com.chanchopeludo.ChanchoPeludoBot.model.PlayListEntity;
 import com.chanchopeludo.ChanchoPeludoBot.service.PlayListService;
 import com.chanchopeludo.ChanchoPeludoBot.util.helpers.EmbedHelper;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -12,9 +15,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -65,13 +65,13 @@ public class PlayListViewCommand implements Command {
                 int totalPages = calculateTotalPages(playlist.getItems().size(), ITEMS_PER_PAGE);
                 List<Button> buttons = createPaginationButtons("pl-view", 1, totalPages, String.valueOf(playlist.getId()));
 
-                event.replyEmbeds(embed).setActionRow(buttons).queue();
+                event.replyEmbeds(embed).setComponents(ActionRow.of(buttons)).queue();
             }
             else {
                 StringSelectMenu menu = createDisambiguationMenu(playlistName, results);
                 String msg = "🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres ver?";
 
-                event.reply(msg).addActionRow(menu).setEphemeral(true).queue();
+                event.reply(msg).setComponents(ActionRow.of(menu)).setEphemeral(true).queue();
             }
 
         } catch (Exception e) {
@@ -105,13 +105,13 @@ public class PlayListViewCommand implements Command {
                 int totalPages = calculateTotalPages(playlist.getItems().size(), ITEMS_PER_PAGE);
                 List<Button> buttons = createPaginationButtons("pl-view", 1, totalPages, String.valueOf(playlist.getId()));
 
-                event.getChannel().sendMessageEmbeds(embed).setActionRow(buttons).queue();
+                event.getChannel().sendMessageEmbeds(embed).setComponents(ActionRow.of(buttons)).queue();
             }
             else {
                 StringSelectMenu menu = createDisambiguationMenu(playlistName, results);
                 String msg = "🔍 Encontré varias playlists llamadas '**" + playlistName + "**'. ¿Cuál quieres ver?";
 
-                event.getChannel().sendMessage(msg).setActionRow(menu).queue();
+                event.getChannel().sendMessage(msg).setComponents(ActionRow.of(menu)).queue();
             }
 
         } catch (Exception e) {

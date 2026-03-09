@@ -1,6 +1,7 @@
 package com.chanchopeludo.ChanchoPeludoBot.util.helpers;
 
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.util.Arrays;
 import java.util.List;

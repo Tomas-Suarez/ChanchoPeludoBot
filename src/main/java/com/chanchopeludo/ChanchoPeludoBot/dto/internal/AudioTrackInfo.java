@@ -1,24 +1,21 @@
 package com.chanchopeludo.ChanchoPeludoBot.dto.internal;
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import dev.arbjerg.lavalink.client.player.Track;
+import dev.arbjerg.lavalink.protocol.v4.TrackInfo;
 
 public record AudioTrackInfo(String title, String url, long durationMs, String author) {
 
-    public static AudioTrackInfo fromAudioTrack(AudioTrack track) {
-        if (track == null) return null;
-
-        com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo lavaplayerInfo = track.getInfo();
-
-        String title;
-        String url = lavaplayerInfo.uri;
-        long durationMs = lavaplayerInfo.length;
-        String author = lavaplayerInfo.author;
-
-        if (track.getUserData() instanceof VideoInfo videoInfo) {
-            title = videoInfo.title();
-        } else {
-            title = lavaplayerInfo.title;
+    public static AudioTrackInfo fromTrack(Track track) {
+        if (track == null){
+            return null;
         }
+
+        TrackInfo info = track.getInfo();
+
+        String title = info.getTitle();
+        String url = info.getUri();
+        long durationMs = info.getLength();
+        String author = info.getAuthor();
 
         return new AudioTrackInfo(title, url, durationMs, author);
     }
